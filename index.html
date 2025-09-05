@@ -1,0 +1,1223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Fastbridge and IEP/Eval Tracker</title>
+<style>
+  :root{
+    --bg:#0b1b3a; --bg-2:#0f244d; --bg-3:#132b5c; --text:#eef3ff; --muted:#a8b2d1;
+    --accent:#6ea8ff; --neutral:#31406b; --ok:#1e7b34; --bad:#a32323;
+    --btn-bg:#20346a; --btn-border:#2e4a94; --chip-border:#3a4e8d;
+    --panel-bg:#122554; --panel-border:#2a3f79; --field-bg:#101f46; --menu-bg:linear-gradient(180deg, var(--bg-2), var(--bg-3)); --menu-border:#223468;
+    --bg-grad1:#15306a; --bg-grad2:var(--bg); --bg-grad3:#061331;
+    --shadow:0 6px 24px rgba(0,0,0,.35);
+  }
+  body[data-theme="crimson"]{
+    --bg:#2a0d13; --bg-2:#3a1219; --bg-3:#22080c; --text:#ffe8ea; --muted:#f3b7bf;
+    --accent:#ff6b81; --neutral:#5a2430; --ok:#2ed573; --bad:#ff4757;
+    --btn-bg:#441420; --btn-border:#7a2b3a; --chip-border:#7a2b3a;
+    --panel-bg:#2d1118; --panel-border:#68303d; --field-bg:#201017; --menu-bg:linear-gradient(180deg,#3a1219,#22080c); --menu-border:#68303d;
+    --bg-grad1:#3b0f18; --bg-grad2:#2a0d13; --bg-grad3:#16070a;
+  }
+  body[data-theme="plum"]{
+    --bg:#1b1130; --bg-2:#20143b; --bg-3:#120a22; --text:#f3eaff; --muted:#cdb8ff;
+    --accent:#a78bfa; --neutral:#35255f; --ok:#34d399; --bad:#ef4444;
+    --btn-bg:#2a1d50; --btn-border:#5b46a3; --chip-border:#5b46a3;
+    --panel-bg:#1f173a; --panel-border:#4e3e8b; --field-bg:#160f29; --menu-bg:linear-gradient(180deg,#20143b,#120a22); --menu-border:#4e3e8b;
+    --bg-grad1:#2a1d50; --bg-grad2:#1b1130; --bg-grad3:#0b0616;
+  }
+  body[data-theme="forest"]{
+    --bg:#0f1f17; --bg-2:#13271d; --bg-3:#0a140f; --text:#e7fff4; --muted:#b7e1cf;
+    --accent:#34d399; --neutral:#1d3a2c; --ok:#22c55e; --bad:#ef4444;
+    --btn-bg:#1a3a2c; --btn-border:#2e7256; --chip-border:#2e7256;
+    --panel-bg:#10261c; --panel-border:#2c5947; --field-bg:#0d1f18; --menu-bg:linear-gradient(180deg,#13271d,#0a140f); --menu-border:#2c5947;
+    --bg-grad1:#1a3a2c; --bg-grad2:#0f1f17; --bg-grad3:#06110c;
+  }
+  body[data-theme="teal"]{
+    --bg:#0a1f25; --bg-2:#0e2a31; --bg-3:#07161a; --text:#e8fbff; --muted:#b7e6ef;
+    --accent:#2dd4bf; --neutral:#1b3840; --ok:#22c55e; --bad:#ef4444;
+    --btn-bg:#18454f; --btn-border:#2d7a87; --chip-border:#2d7a87;
+    --panel-bg:#0e2a31; --panel-border:#2a5861; --field-bg:#0a1f25; --menu-bg:linear-gradient(180deg,#0e2a31,#07161a); --menu-border:#2a5861;
+    --bg-grad1:#18454f; --bg-grad2:#0a1f25; --bg-grad3:#050e10;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; font-family: ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+    background: radial-gradient(1200px 1200px at 20% -5%, var(--bg-grad1) 0%, var(--bg-grad2) 40%, var(--bg-grad3) 100%);
+    color:var(--text);
+  }
+  .wrap{max-width:1180px;margin:24px auto;padding:0 16px}
+  header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+  .title{font-weight:800;letter-spacing:.2px;font-size:clamp(22px,3vw,30px)}
+  .tabs-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .tabsbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .class-tab{position:relative;display:flex;align-items:center;gap:8px;background:var(--panel-bg);border:1px solid var(--panel-border);color:var(--text);padding:8px 12px;border-radius:12px;cursor:pointer;user-select:none}
+  .class-tab.active{background:var(--accent);color:#071027;font-weight:800}
+  .class-tab .close{font-weight:800;opacity:.7}
+  .class-tab .close:hover{opacity:1}
+  .add-class{background:var(--btn-bg);border:1px solid var(--btn-border);padding:8px 12px;border-radius:10px;cursor:pointer;color:var(--text);font-weight:700}
+  .appnav{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+  .appnav .tab{background:var(--panel-bg);border:1px solid var(--panel-border);color:var(--text);padding:8px 12px;border-radius:999px;cursor:pointer}
+  .appnav .tab.active{background:var(--accent);color:#071027;font-weight:800}
+  .btn{background:var(--btn-bg);color:var(--text);border:1px solid var(--btn-border);padding:8px 12px;border-radius:10px;cursor:pointer}
+  .btn:hover{filter:brightness(1.06)}
+  .btn.accent{background:var(--accent);color:#041222;border-color:#7db4ff;font-weight:700}
+  .btn.bad{background:#5b1620;border-color:#912636;color:#ffeef0}
+  .card{background:var(--menu-bg);border:1px solid var(--menu-border);border-radius:16px;padding:16px;box-shadow:var(--shadow);margin-top:12px}
+  .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}
+  .pill{padding:6px 10px;border-radius:999px;border:1px solid var(--panel-border);background:var(--panel-bg);color:#cfe0ff;cursor:pointer;user-select:none}
+  .pill.active{background:var(--accent);color:#041222;border-color:#7db4ff;font-weight:800}
+  .toggle-pair{display:flex;gap:8px;align-items:center;flex-wrap:nowrap}
+  .chips-right{display:flex;gap:6px;align-items:center;margin-left:auto}
+  .search{min-width:220px;padding:8px 12px;border-radius:10px;border:1px solid var(--panel-border);background:var(--field-bg);color:var(--text)}
+  .select,.input{padding:8px 12px;border-radius:10px;border:1px solid var(--panel-border);background:var(--field-bg);color:var(--text)}
+  .muted{color:var(--muted);font-size:13px}
+  .spacer{flex:1}
+  .divider{height:1px;background:var(--panel-border);margin:8px 0 12px 0;border-radius:999px}
+
+  .table-wrap{overflow:auto;} /* allow horizontal scroll if user makes cols wide */
+  table.table{width:max(100%, 820px); border-collapse:separate; border-spacing:0 8px}
+  col { width:auto; }
+  .thead .th{text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:#d6defb;opacity:.9;padding:6px 8px;white-space:nowrap;position:relative}
+  .col-resizer{position:absolute; top:0; right:-3px; width:8px; height:100%; cursor:col-resize; }
+  .col-resizer::after{content:""; position:absolute; top:6px; bottom:6px; left:3px; width:2px; background:var(--panel-border); border-radius:2px; opacity:.6}
+  .resizing .col-resizer::after{background:var(--accent); opacity:1}
+
+  .tr{background:var(--panel-bg);border:1px solid var(--panel-border);border-radius:12px;overflow:hidden}
+  tbody .tr:nth-child(even){background: linear-gradient(0deg, rgba(255,255,255,.04), rgba(255,255,255,.04)), var(--panel-bg);}
+  .td{padding:8px;vertical-align:middle}
+  .name-cell{padding:10px 12px;font-weight:800;line-height:1.2;background:transparent;display:flex;align-items:center;gap:8px}
+  .badge{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:999px;font-weight:800;font-size:12px;border:1px solid #2a7a4a;background:#163a24;color:#aaffc5}
+  .badge.warn{background:#3a2d16;border-color:#9a7b2f;color:#ffe7b9}
+  .badge.due{background:#4a1420;border-color:#b03a4a;color:#ffdede}
+  .badge .x{display:inline-block;margin-left:6px;opacity:.8;cursor:pointer;font-weight:900}
+  .checkbox{appearance:none;width:22px;height:22px;border-radius:6px;border:2px solid var(--btn-border);background:var(--field-bg);display:inline-grid;place-items:center;cursor:pointer;position:relative;outline:none}
+  .checkbox:checked{background:var(--accent);border-color:#8dbaff}
+  .checkbox:checked::after{content:"✓";color:#041222;font-weight:900;font-size:14px}
+  .mini{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .mini .input{width:140px}
+  .hidden{display:none !important}
+  .name-badges{display:flex;gap:6px;align-items:center;margin-left:auto}
+  .progress-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;border:1px solid var(--chip-border);background:var(--panel-bg);font-weight:800}
+
+  /* Modals */
+  .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:70}
+  .modal-backdrop.open{display:flex}
+  .modal{background:var(--menu-bg);border:1px solid var(--menu-border);border-radius:16px;padding:16px;width:min(1200px,98vw);box-shadow:var(--shadow);color:var(--text);max-height:92vh;overflow:auto}
+  #settingsModal .modal{height:88vh;max-height:88vh;display:flex;flex-direction:column}
+  #settingsModal .modal .tabs{flex:0 0 auto}
+  #settingsPanel.modal-body{flex:1 1 auto;overflow:auto;min-height:0}
+  #studentModal .modal{height:90vh;max-height:90vh;display:flex;flex-direction:column;width:min(1200px,96vw)}
+  #studentModal .modal .modal-body{flex:1 1 auto;overflow:auto;min-height:0}
+  .modal .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+  .modal .tabs .tab{padding:6px 10px;border-radius:999px;border:1px solid var(--panel-border);background:var(--panel-bg);cursor:pointer}
+  .modal .tabs .tab.active{background:var(--accent);color:#041222;border-color:#7db4ff;font-weight:800}
+  .field{display:flex;flex-direction:column;gap:6px}
+  .kbd{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:#0b1735;border:1px solid #2c3f7a;border-radius:6px;padding:2px 6px;font-size:12px;color:#dfe7ff}
+  * { scrollbar-width: thin; scrollbar-color: var(--btn-border) var(--panel-bg) }
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-track{background:var(--panel-bg);border-radius:10px}
+  ::-webkit-scrollbar-thumb{background:var(--btn-border);border-radius:10px;border:2px solid var(--panel-bg)}
+  ::-webkit-scrollbar-thumb:hover{background:var(--accent)}
+
+  /* Effects layer for checkbox animations */
+  .fx-layer{position:fixed;left:0;top:0;pointer-events:none;width:100vw;height:100vh;overflow:visible;z-index:9999}
+  .fx-dot{position:absolute;width:6px;height:6px;border-radius:50%}
+  .fx-confetti{position:absolute;width:6px;height:10px;transform:rotate(0deg)}
+
+  .row-wrap{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;border:1px solid var(--panel-border);background:var(--panel-bg);font-weight:700}
+  .chip-date{padding:2px 8px;border-radius:999px;background:linear-gradient(180deg,var(--bg-2),var(--bg-3));border:1px solid var(--panel-border)}
+  .chip .options{cursor:pointer;opacity:.85}
+
+  /* Custom theme picker */
+  .theme-picker{position:relative;display:inline-block}
+  .theme-trigger{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;border:1px solid var(--panel-border);background:var(--field-bg);color:var(--text);cursor:pointer;min-width:200px}
+  .swatch{width:28px;height:16px;border-radius:4px;border:1px solid var(--panel-border)}
+  .theme-menu{position:absolute;left:0;top:calc(100% + 6px);background:var(--menu-bg);border:1px solid var(--menu-border);border-radius:12px;box-shadow:var(--shadow);padding:6px;display:none;z-index:100}
+  .theme-menu.open{display:block}
+  .theme-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;cursor:pointer;min-width:220px}
+  .theme-item:hover{background:var(--panel-bg)}
+</style>
+</head>
+<body data-theme="navy">
+  <div class="wrap">
+    <header>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="title" id="appTitle">Fastbridge and IEP/Eval Tracker</div>
+      </div>
+      <div class="tabs-right">
+        <div class="tabsbar" id="tabsbar"></div>
+        <button id="openSettings" class="btn" aria-label="Settings">Settings</button>
+      </div>
+    </header>
+    <div class="appnav" id="appnav"></div>
+
+    <!-- FASTBRIDGE TAB -->
+    <section id="fastbridge" class="card" aria-label="Fastbridge" style="display:none;">
+      <div class="toolbar" id="fbToolbar">
+        <button id="addStudentBtn" class="btn accent">+ Add Student</button>
+        <button id="bulkAddBtn" class="btn">Bulk Add</button>
+
+        <label class="muted">Names</label>
+        <select id="nameFormat" class="select">
+          <option value="firstLast">First Last</option>
+          <option value="lastFirst">Last, First</option>
+        </select>
+
+        <input id="searchBox" class="search" placeholder="Search students  ( / )" />
+        <label class="pill" id="toggleSearchNotes" title="Include notes in search">Search notes</label>
+
+        <div class="spacer"></div>
+
+        <label class="muted">Trimester</label>
+        <select id="triSelect" class="select" title="1/2/3 or 0 for All">
+          <option value="T1">T1</option>
+          <option value="T2">T2</option>
+          <option value="T3">T3</option>
+          <option value="All">All</option>
+        </select>
+
+        <label class="pill" id="missingOnlyPill" title="Show only students missing this trimester">Missing only</label>
+
+        <div class="toggle-pair">
+          <label id="datesToolbarWrap" class="pill" title="Toggle date pickers for visible checkboxes">Show dates</label>
+          <label id="notesToolbarWrap" class="pill" title="Toggle note fields for visible checkboxes">Show notes</label>
+        </div>
+
+        <!-- Right-aligned progress chips -->
+        <div id="chipsRight" class="chips-right"></div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="table-wrap" id="fastbridgeTableWrap"></div>
+      <div class="muted" style="margin-top:8px">Shortcuts: <span class="kbd">/</span> search • <span class="kbd">1</span>/<span class="kbd">2</span>/<span class="kbd">3</span>/<span class="kbd">0</span> trimester • <span class="kbd">n</span> add student • <span class="kbd">b</span> bulk add • <span class="kbd">f</span> Fastbridge • <span class="kbd">p</span> IEP/Evals</div>
+    </section>
+
+    <!-- IEP / EVALUATIONS TAB -->
+    <section id="plans" class="card" aria-label="IEP / Evaluations" style="display:none;">
+      <div class="toolbar">
+        <label class="muted">Names</label>
+        <select id="nameFormat2" class="select">
+          <option value="firstLast">First Last</option>
+          <option value="lastFirst">Last, First</option>
+        </select>
+
+        <input id="planSearch" class="search" placeholder="Search students  ( / )" />
+        <label class="pill" id="planSearchNotes" title="Include notes in search">Search notes</label>
+
+        <div class="spacer"></div>
+        <label class="muted">Filter</label>
+        <select id="planFilter" class="select">
+          <option value="all">All</option>
+          <option value="upcoming">Upcoming</option>
+          <option value="overdue">Overdue</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+      <div class="divider"></div>
+      <div id="plansTableWrap"></div>
+    </section>
+  </div>
+
+  <!-- Bulk Add Modal -->
+  <div id="bulkModal" class="modal-backdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="Bulk Add Students">
+      <h3>Bulk Add Students</h3>
+      <p class="muted">Paste one name per line. Accepts “First Last” or “Last, First”.</p>
+      <textarea id="bulkTextarea" class="search" style="width:100%;min-height:160px" placeholder="e.g.
+Hermione Granger
+Potter, Harry
+Weasley, Ron"></textarea>
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <button id="bulkPreviewBtn" class="btn">Preview</button>
+        <button id="bulkCancelBtn" class="btn bad">Cancel</button>
+        <div class="spacer"></div>
+        <button id="bulkConfirmBtn" class="btn accent">Add Students</button>
+      </div>
+      <div id="bulkPreview" style="margin-top:10px;display:flex;flex-wrap:wrap;gap:6px"></div>
+    </div>
+  </div>
+
+  <!-- Student Plans Modal -->
+  <div id="studentModal" class="modal-backdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="Student Plans">
+      <div style="display:flex;gap:8px;align-items:center;">
+        <h3 id="stuTitle" style="margin:0">Student</h3>
+        <div class="spacer"></div>
+        <button id="stuClose" class="btn accent">Close</button>
+      </div>
+      <div class="divider"></div>
+      <div class="modal-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start;">
+          <div>
+            <h4 style="margin:6px 0">Evaluations</h4>
+            <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px;">
+              <input id="evalDate" type="date" class="input" />
+              <button id="addEval" class="btn">+ Add</button>
+            </div>
+            <div id="evalList" class="row-wrap"></div>
+          </div>
+          <div>
+            <h4 style="margin:6px 0">IEP</h4>
+            <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px;">
+              <input id="iepDate" type="date" class="input" />
+              <button id="addIEP" class="btn">+ Add</button>
+            </div>
+            <div id="iepList" class="row-wrap"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Unified Settings Modal -->
+  <div id="settingsModal" class="modal-backdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="Settings">
+      <h3>Settings</h3>
+      <div class="tabs" id="settingsTabs">
+        <div class="tab active" data-tab="general">General</div>
+        <div class="tab" data-tab="fastbridge">Fastbridge</div>
+        <div class="tab" data-tab="plans">IEP/Evals</div>
+      </div>
+      <div id="settingsPanel" class="modal-body"></div>
+      <div class="divider"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button id="closeSettings" class="btn accent">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Effects layer -->
+  <div id="fxLayer" class="fx-layer" aria-hidden="true"></div>
+
+<script>
+/* ===================== State ===================== */
+const STORAGE_KEY = "fastbridge_iep_tracker_v11";
+const DEFAULT_STATE = {
+  classes: [{ id: crypto.randomUUID(), name: "Period 1", students: [] }],
+  activeClassId: null,
+  activeScreen: "fastbridge",
+  nameFormat: "firstLast",
+  search: "",
+  searchNotesFB: false,
+  searchNotesPL: false,
+  theme: "navy",
+  settings: {
+    fastbridge: {
+      tabName: "Fastbridge",
+      labelA: "A Reading",
+      labelAuto: "Auto Reading",
+      trimester: "T1",
+      alertMode: "both", // a | auto | both | neither
+      datesShown: false,
+      notesShown: false,
+      datesToggleVisible: true,
+      notesToggleVisible: true,
+      animationStyle: "explosion", // 'none' disables
+      progressChips: true,
+      missingOnly: false,
+      colWidths: {
+        T1:   { name: 300, a: 220, auto: 220 },
+        T2:   { name: 300, a: 220, auto: 220 },
+        T3:   { name: 300, a: 220, auto: 220 },
+        All:  { name: 300, a_T1:160, a_T2:160, a_T3:160, auto_T1:160, auto_T2:160, auto_T3:160 }
+      }
+    },
+    plans: {
+      tabName: "IEP/Evaluations",
+      labelEval: "Evaluation",
+      labelIEP: "IEP",
+      showNotesPreview: false,
+      upcomingDays: 14,
+      filter: "all"
+    }
+  }
+};
+
+function safeParse(raw){ try{ return JSON.parse(raw); }catch{ return null; } }
+function load(){ const s = safeParse(localStorage.getItem(STORAGE_KEY)); return ensureState(s||DEFAULT_STATE); }
+function save(){ state._savedAt = Date.now(); localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+function ensureState(s){
+  s.activeClassId ??= s.classes[0]?.id || null;
+  if(!s.classes.some(c=>c.id===s.activeClassId)) s.activeClassId = s.classes[0]?.id || null;
+  s.settings ??= DEFAULT_STATE.settings;
+  const fb = s.settings.fastbridge ?? (s.settings.fastbridge = DEFAULT_STATE.settings.fastbridge);
+  fb.colWidths ??= DEFAULT_STATE.settings.fastbridge.colWidths;
+  ["T1","T2","T3","All"].forEach(k=>{
+    fb.colWidths[k] ??= DEFAULT_STATE.settings.fastbridge.colWidths[k];
+  });
+  s.settings.plans ??= DEFAULT_STATE.settings.plans;
+  return s;
+}
+let state = load();
+
+/* ===================== Helpers ===================== */
+const qs = (sel, el=document)=>el.querySelector(sel);
+const qsa = (sel, el=document)=>Array.from(el.querySelectorAll(sel));
+function getClass(){ return state.classes.find(c=>c.id===state.activeClassId) || state.classes[0]; }
+function fmtName(st){
+  const f = st.first||"", l = st.last||"";
+  if(state.nameFormat==="lastFirst"){
+    if(f && l) return l + ", " + f;
+    if((st.name||"").includes(",")) return st.name.trim();
+  }
+  if(f && l) return f + " " + l;
+  return (st.name||"").trim();
+}
+function parseName(line){
+  if(!line || !line.trim()) return null;
+  const t = line.trim();
+  if(t.includes(",")){
+    const [last, first] = t.split(",").map(x=>x.trim());
+    return { first, last, name: (first+" "+last).trim() };
+  }else{
+    const parts = t.split(/\s+/);
+    if(parts.length>=2){ const first = parts.slice(0,-1).join(" "), last = parts.at(-1); return { first, last, name:(first+" "+last).trim() }; }
+    return { name:t };
+  }
+}
+function fmtDateMDY(iso){ if(!iso) return ""; const [y,m,d] = iso.split("-"); return (m+"/"+d+"/"+y); }
+function fmtDateMDY2(iso){ if(!iso) return ""; const [y,m,d]=iso.split("-"); return (m+"/"+d+"/"+y.slice(-2)); }
+function todayISO(){ const d=new Date(); const m=("0"+(d.getMonth()+1)).slice(-2); const day=("0"+d.getDate()).slice(-2); return d.getFullYear()+"-"+m+"-"+day; }
+function ensureStudent(st){
+  const s = st||{};
+  s.id ??= crypto.randomUUID();
+  s.name ??= "";
+  s.first ??= s.first;
+  s.last ??= s.last;
+  s.fast ??= { a:{T1:{done:false,date:null,note:""}, T2:{done:false,date:null,note:""}, T3:{done:false,date:null,note:""} },
+               auto:{T1:{done:false,date:null,note:""}, T2:{done:false,date:null,note:""}, T3:{done:false,date:null,note:""} } };
+  s.plans ??= { evals:[], ieps:[] };
+  return s;
+}
+function pushStudentToClass(cls, obj){ cls.students.push(ensureStudent(obj)); }
+function isUpcoming(entry, days){
+  if(entry.completed) return false;
+  if(entry.dismissed) return false;
+  const dt = new Date(entry.date+"T00:00:00");
+  const now = new Date();
+  const diff = Math.ceil((dt - now)/(1000*60*60*24));
+  return diff >= 0 && diff <= days;
+}
+function isOverdue(entry){
+  if(entry.completed) return false;
+  if(entry.dismissed) return false;
+  const dt = new Date(entry.date+"T00:00:00");
+  const now = new Date();
+  return dt < now;
+}
+
+/* ===================== Class Tabs ===================== */
+const tabsbar = qs("#tabsbar");
+function renderClassTabs(){
+  tabsbar.innerHTML="";
+  state.classes.forEach((c,idx)=>{
+    const el = document.createElement("div");
+    el.className = "class-tab" + (c.id===state.activeClassId?" active":"");
+    const label = document.createElement("span"); label.textContent = c.name || ("Period "+(idx+1));
+    const close = document.createElement("span"); close.className="close"; close.textContent="×"; close.title="Delete class";
+    close.onclick = (e)=>{ e.stopPropagation(); if(state.classes.length<=1){ alert("You need at least one class."); return; } if(!confirm(`Delete class "${c.name}" and all its students?`)) return;
+      state.classes = state.classes.filter(x=>x.id!==c.id); state.activeClassId = state.classes[0]?.id || null; save(); renderAll();
+    };
+    el.onclick = ()=>{ state.activeClassId=c.id; save(); renderAll(); };
+    el.ondblclick = ()=>{ const name=prompt("Rename class:", c.name||("Period "+(idx+1))); if(name){ c.name=name.trim(); save(); renderClassTabs(); } };
+    el.onmousedown = (e)=>{ if(e.shiftKey){ e.preventDefault(); const name=prompt("Rename class:", c.name||("Period "+(idx+1))); if(name){ c.name=name.trim(); save(); renderClassTabs(); } } };
+    el.append(label, close); tabsbar.appendChild(el);
+  });
+  const add = document.createElement("button"); add.textContent="+ Add Class"; add.className="add-class";
+  add.onclick = ()=>{ const name = prompt("Class name:", `Period ${state.classes.length+1}`) || `Period ${state.classes.length+1}`;
+    state.classes.push({ id:crypto.randomUUID(), name:name.trim(), students:[] }); state.activeClassId = state.classes.at(-1).id; save(); renderAll(); };
+  tabsbar.appendChild(add);
+}
+
+/* ===================== App Nav ===================== */
+const appnav = qs("#appnav");
+function appTab(label, key){
+  const b = document.createElement("button"); b.className="tab"+(state.activeScreen===key?" active":""); b.dataset.screen=key; b.textContent=label;
+  b.onclick = ()=> setActiveScreen(key);
+  return b;
+}
+function renderAppNav(){
+  appnav.innerHTML="";
+  appnav.appendChild(appTab(state.settings.fastbridge.tabName||"Fastbridge","fastbridge"));
+  appnav.appendChild(appTab(state.settings.plans.tabName||"IEP/Evaluations","plans"));
+  updateNavActive();
+}
+function updateNavActive(){
+  qsa(".appnav .tab").forEach(btn=> btn.classList.toggle("active", btn.dataset.screen===state.activeScreen));
+}
+function setActiveScreen(key){
+  state.activeScreen=key; save(); applyScreen(); updateNavActive();
+}
+function applyScreen(){
+  qs("#fastbridge").style.display = (state.activeScreen==="fastbridge")?"":"none";
+  qs("#plans").style.display = (state.activeScreen==="plans")?"":"none";
+  document.body.setAttribute("data-theme", state.theme||"navy");
+  if(state.activeScreen==="fastbridge") renderFastbridge();
+  if(state.activeScreen==="plans") renderPlans();
+}
+
+/* ===================== Fastbridge Render with Resizers ===================== */
+function keysForTri(tri){
+  return tri==="All"
+    ? ["name","a_T1","a_T2","a_T3","auto_T1","auto_T2","auto_T3"]
+    : ["name","a","auto"];
+}
+function humanLabel(key, labels){
+  if(key==="name") return "Student";
+  if(key==="a") return labels.A;
+  if(key==="auto") return labels.Auto;
+  const [k,t] = key.split("_");
+  if(k==="a") return `${labels.A} ${t}`;
+  if(k==="auto") return `${labels.Auto} ${t}`;
+  return key;
+}
+function slotForKey(key, tri){
+  if(key==="name") return null;
+  if(tri==="All"){
+    const [kind,T]=key.split("_");
+    return [kind, T];
+  }else{
+    if(key==="a") return ["a", tri];
+    if(key==="auto") return ["auto", tri];
+  }
+  return ["a", tri];
+}
+
+function renderFastbridge(){
+  const cls = getClass();
+
+  qs("#nameFormat").value = state.nameFormat;
+  qs("#triSelect").value = state.settings.fastbridge.trimester;
+  qs("#missingOnlyPill").classList.toggle("active", !!state.settings.fastbridge.missingOnly);
+  qs("#toggleSearchNotes").classList.toggle("active", !!state.searchNotesFB);
+
+  const datesLbl = qs("#datesToolbarWrap");
+  const notesLbl = qs("#notesToolbarWrap");
+  datesLbl.style.display = state.settings.fastbridge.datesToggleVisible ? "" : "none";
+  notesLbl.style.display = state.settings.fastbridge.notesToggleVisible ? "" : "none";
+  datesLbl.classList.toggle("active", !!state.settings.fastbridge.datesShown);
+  notesLbl.classList.toggle("active", !!state.settings.fastbridge.notesShown);
+
+  const fbSet = state.settings.fastbridge;
+  const tri = fbSet.trimester;
+  const labels = {A: fbSet.labelA||"A Reading", Auto: fbSet.labelAuto||"Auto Reading"};
+
+  // Chips in toolbar (right)
+  const chipsR = qs("#chipsRight");
+  if(tri!=="All" && fbSet.progressChips){
+    const [A,U] = countFastbridge(cls.students, tri);
+    chipsR.style.display="flex";
+    chipsR.innerHTML = `
+      <div class="progress-chip">${labels.A} ${tri}: ${A.done}/${A.total}</div>
+      <div class="progress-chip">${labels.Auto} ${tri}: ${U.done}/${U.total}</div>
+    `;
+  }else{
+    chipsR.style.display="none";
+    chipsR.innerHTML="";
+  }
+
+  const wrap = qs("#fastbridgeTableWrap"); wrap.innerHTML="";
+  const table = document.createElement("table"); table.className="table";
+  const colgroup = document.createElement("colgroup");
+  const thead = document.createElement("thead"); thead.className="thead";
+  const trh = document.createElement("tr"); trh.className="tr";
+
+  const keys = keysForTri(tri);
+  // Build colgroup using stored widths
+  const widths = (state.settings.fastbridge.colWidths[tri] ||= {});
+  const defaultWidths = DEFAULT_STATE.settings.fastbridge.colWidths[tri];
+
+  keys.forEach((key, idx)=>{
+    const col = document.createElement("col");
+    const w = widths[key] ?? defaultWidths[key] ?? (key==="name" ? 300 : 180);
+    col.style.width = w + "px";
+    col.dataset.key = key;
+    colgroup.appendChild(col);
+
+    const th = document.createElement("th"); th.className="th"; th.textContent = humanLabel(key, labels);
+    // Add resizer handle (for all columns)
+    const grip = document.createElement("span"); grip.className="col-resizer"; grip.title = "Drag to resize";
+    grip.addEventListener("mousedown", (e)=> startResize(e, key, col, th));
+    th.appendChild(grip);
+    trh.appendChild(th);
+  });
+
+  thead.appendChild(trh);
+  table.appendChild(colgroup);
+  table.appendChild(thead);
+
+  const tbody = document.createElement("tbody");
+
+  const q = (state.search||"").toLowerCase().trim();
+  let students = [...cls.students];
+  if(q){
+    students = students.filter(st=>{
+      if(fmtName(st).toLowerCase().includes(q)) return true;
+      if(!state.searchNotesFB) return false;
+      const scanTri = (tri==="All"?["T1","T2","T3"]:[tri]);
+      for(const k of scanTri){
+        if((st.fast.a[k]?.note||"").toLowerCase().includes(q)) return true;
+        if((st.fast.auto[k]?.note||"").toLowerCase().includes(q)) return true;
+      }
+      return false;
+    });
+  }
+
+  students.sort((a,b)=>{
+    const A = fmtName(a).toLowerCase(), B = fmtName(b).toLowerCase();
+    return A.localeCompare(B, undefined, {numeric:true});
+  });
+
+  if(fbSet.missingOnly && tri!=="All" && fbSet.alertMode!=="neither"){
+    students = students.filter(st=>{
+      const A = st.fast.a[tri]?.done;
+      const U = st.fast.auto[tri]?.done;
+      if(fbSet.alertMode==="a") return !A;
+      if(fbSet.alertMode==="auto") return !U;
+      if(fbSet.alertMode==="both") return !(A && U);
+      return true;
+    });
+  }
+
+  function makeCell(st, slot){
+    const td = document.createElement("td"); td.className="td";
+    if(!slot){ // name column
+      const tdName = td;
+      const nameSpan = document.createElement("span"); nameSpan.textContent = fmtName(st);
+      tdName.classList.add("name-cell");
+      tdName.appendChild(nameSpan);
+
+      if(tri!=="All" && fbSet.alertMode!=="neither"){
+        const A = st.fast.a[tri]?.done;
+        const U = st.fast.auto[tri]?.done;
+        let msg=null;
+        if(fbSet.alertMode==="a" && !A) msg = `Needs: ${labels.A}`;
+        else if(fbSet.alertMode==="auto" && !U) msg = `Needs: ${labels.Auto}`;
+        else if(fbSet.alertMode==="both"){
+          if(!A && !U) msg = "Needs: Both";
+          else if(!A) msg = `Needs: ${labels.A}`;
+          else if(!U) msg = `Needs: ${labels.Auto}`;
+        }
+        if(msg){
+          const badge = document.createElement("span"); badge.className="badge warn"; badge.textContent=msg;
+          const nb = document.createElement("div"); nb.className="name-badges"; nb.appendChild(badge);
+          tdName.appendChild(nb);
+        }
+      }
+      return tdName;
+    }
+
+    const box = document.createElement("div"); box.className="mini";
+    const chk = document.createElement("input"); chk.type="checkbox"; chk.className="checkbox";
+    chk.checked = !!st.fast[slot[0]][slot[1]].done;
+    chk.onchange = (e)=>{
+      const r = chk.getBoundingClientRect();
+      playFxAt(r.left + r.width/2, r.top + r.height/2, state.settings.fastbridge.animationStyle);
+      st.fast[slot[0]][slot[1]].done = !!e.target.checked;
+      if(st.fast[slot[0]][slot[1]].done && state.settings.fastbridge.datesShown && !st.fast[slot[0]][slot[1]].date){
+        if(confirm("No date selected. Set to today?")) st.fast[slot[0]][slot[1]].date = todayISO();
+      }
+      save(); renderFastbridge();
+    };
+    box.appendChild(chk);
+
+    if(state.settings.fastbridge.datesShown){
+      const dt = document.createElement("input"); dt.type="date"; dt.className="input";
+      dt.value = st.fast[slot[0]][slot[1]].date || "";
+      dt.onchange = ()=>{ st.fast[slot[0]][slot[1]].date = dt.value || null; save(); };
+      box.appendChild(dt);
+    }
+    if(state.settings.fastbridge.notesShown){
+      const note = document.createElement("input"); note.className="input"; note.placeholder="Note";
+      note.value = st.fast[slot[0]][slot[1]].note || "";
+      note.oninput = ()=>{ st.fast[slot[0]][slot[1]].note = note.value; save(); };
+      box.appendChild(note);
+    }
+    td.appendChild(box); return td;
+  }
+
+  students.forEach(st=>{
+    const tr = document.createElement("tr"); tr.className="tr";
+    keys.forEach(key=>{
+      const slot = slotForKey(key, tri);
+      tr.appendChild(makeCell(st, slot));
+    });
+    tbody.appendChild(tr);
+  });
+
+  table.appendChild(tbody);
+  wrap.appendChild(table);
+}
+
+/* Column resize mechanics */
+let resizeState = null;
+function startResize(e, key, colEl, thEl){
+  e.preventDefault();
+  const tableWrap = qs("#fastbridgeTableWrap");
+  const tri = state.settings.fastbridge.trimester;
+  const widths = state.settings.fastbridge.colWidths[tri];
+  const startX = e.clientX;
+  const startWidth = parseFloat(colEl.style.width) || 160;
+  document.body.classList.add("resizing");
+
+  const minW = key==="name" ? 180 : 100;
+  const maxW = 700;
+
+  function onMove(ev){
+    const dx = ev.clientX - startX;
+    let w = Math.max(minW, Math.min(maxW, Math.round(startWidth + dx)));
+    colEl.style.width = w + "px";
+  }
+  function onUp(ev){
+    const dx = ev.clientX - startX;
+    let w = Math.max(minW, Math.min(maxW, Math.round(startWidth + dx)));
+    widths[key] = w;
+    save();
+    document.removeEventListener("mousemove", onMove);
+    document.removeEventListener("mouseup", onUp);
+    document.body.classList.remove("resizing");
+  }
+  document.addEventListener("mousemove", onMove);
+  document.addEventListener("mouseup", onUp);
+}
+
+/* ===================== Plans Render ===================== */
+function renderPlans(){
+  const cls = getClass();
+  const wrap = qs("#plansTableWrap"); wrap.innerHTML="";
+  const tbl = document.createElement("table"); tbl.className="table";
+  const thead = document.createElement("thead"); thead.className="thead";
+  const trh = document.createElement("tr"); trh.className="tr";
+  function th(text){ const el=document.createElement("th"); el.className="th"; el.textContent=text; return el; }
+  trh.appendChild(th("Student"));
+  trh.appendChild(th(state.settings.plans.labelEval||"Evaluation"));
+  trh.appendChild(th(state.settings.plans.labelIEP||"IEP"));
+  thead.appendChild(trh); tbl.appendChild(thead);
+  const tbody = document.createElement("tbody");
+
+  qs("#nameFormat2").value = state.nameFormat;
+  const q = (state.search||"").toLowerCase().trim();
+  const filter = state.settings.plans.filter || "all";
+  const days = Number(state.settings.plans.upcomingDays)||14;
+  qs("#planSearchNotes").classList.toggle("active", !!state.searchNotesPL);
+
+  let students = [...cls.students];
+  if(q){
+    students = students.filter(st=>{
+      if(fmtName(st).toLowerCase().includes(q)) return true;
+      if(!state.searchNotesPL) return false;
+      const lists = (st.plans.evals||[]).concat(st.plans.ieps||[]);
+      for(const it of lists){
+        if((it.notes||[]).some(n=>(n||"").toLowerCase().includes(q))) return true;
+      }
+      return false;
+    });
+  }
+  students.sort((a,b)=> fmtName(a).toLowerCase().localeCompare(fmtName(b).toLowerCase()));
+
+  function nextOf(arr){
+    const now = new Date();
+    const sorted = (arr||[]).filter(x=>x.date).slice().sort((a,b)=> new Date(a.date)-new Date(b.date));
+    for(const x of sorted){ if(!x.completed && new Date(x.date) >= now) return x; }
+    const overdue = (arr||[]).filter(x=>!x.completed && new Date(x.date)<now).sort((a,b)=> new Date(a.date)-new Date(b.date));
+    return overdue[0] || null;
+  }
+  function cellFor(entry, kind, stu){
+    const td = document.createElement("td"); td.className="td";
+    if(!entry){ td.textContent="N/A"; td.classList.add("muted"); td.onclick = ()=> openStudentModal(stu.id); return td; }
+    const line = document.createElement("div");
+    const span = document.createElement("span"); span.textContent = fmtDateMDY(entry.date);
+    line.appendChild(span);
+    if(isOverdue(entry)){
+      const b=document.createElement("span"); b.className="badge due"; b.style.marginLeft="8px"; b.innerHTML='Overdue <span class="x" title="Dismiss">×</span>';
+      b.querySelector(".x").onclick = (ev)=>{ ev.stopPropagation(); entry.dismissed=true; save(); renderPlans(); };
+      line.appendChild(b);
+    }else if(isUpcoming(entry, days)){
+      const b=document.createElement("span"); b.className="badge warn"; b.style.marginLeft="8px"; b.innerHTML='Upcoming <span class="x" title="Dismiss">×</span>';
+      b.querySelector(".x").onclick = (ev)=>{ ev.stopPropagation(); entry.dismissed=true; save(); renderPlans(); };
+      line.appendChild(b);
+    }
+    td.appendChild(line);
+    if(state.settings.plans.showNotesPreview){
+      const last = (entry.notes||[]).slice(-1)[0] || "";
+      if(last){
+        const pv = document.createElement("div"); pv.className="note-snippet";
+        const short = last.length>80 ? last.slice(0,80)+"…" : last;
+        pv.innerHTML = `<span class="note-inline">${short}</span>${last.length>80?' <span class="more">(more)</span>':''}`;
+        td.appendChild(pv);
+        pv.onclick = ()=> openStudentModal(stu.id);
+      }
+    }
+    td.onclick = ()=> openStudentModal(stu.id);
+    return td;
+  }
+
+  students = students.filter(st=>{
+    if(filter==="all") return true;
+    const eNext = nextOf(st.plans.evals);
+    const iNext = nextOf(st.plans.ieps);
+    const hasNA = (!eNext && !iNext);
+    const anyUpcoming = (eNext && isUpcoming(eNext,days)) || (iNext && isUpcoming(iNext,days));
+    const anyOver = (eNext && isOverdue(eNext)) || (iNext && isOverdue(iNext));
+    if(filter==="na") return hasNA;
+    if(filter==="upcoming") return anyUpcoming;
+    if(filter==="overdue") return anyOver;
+    return true;
+  });
+
+  students.forEach(st=>{
+    const tr = document.createElement("tr"); tr.className="tr";
+    const tdName = document.createElement("td"); tdName.className="td name-cell"; tdName.textContent = fmtName(st);
+    tdName.onclick = ()=> openStudentModal(st.id);
+    tr.appendChild(tdName);
+
+    const nextEval = nextOf(st.plans.evals);
+    const nextIEP = nextOf(st.plans.ieps);
+    tr.appendChild(cellFor(nextEval, "eval", st));
+    tr.appendChild(cellFor(nextIEP, "iep", st));
+
+    tbody.appendChild(tr);
+  });
+
+  tbl.appendChild(tbody); wrap.appendChild(tbl);
+}
+
+/* ===================== Settings Panels ===================== */
+const THEME_META = {
+  navy:   {label:"Navy (default)",  swatch:"linear-gradient(90deg,#15306a,#0b1b3a)"},
+  crimson:{label:"Crimson",          swatch:"linear-gradient(90deg,#7a2b3a,#2a0d13)"},
+  plum:   {label:"Plum",             swatch:"linear-gradient(90deg,#5b46a3,#1b1130)"},
+  forest: {label:"Forest",           swatch:"linear-gradient(90deg,#2e7256,#0f1f17)"},
+  teal:   {label:"Teal",             swatch:"linear-gradient(90deg,#2d7a87,#0a1f25)"},
+};
+function buildThemePicker(host){
+  host.innerHTML = "";
+  const trigger = document.createElement("button");
+  trigger.type="button"; trigger.className="theme-trigger";
+  const sw = document.createElement("span"); sw.className="swatch";
+  const lbl = document.createElement("span");
+  trigger.append(sw,lbl);
+  const menu = document.createElement("div"); menu.className="theme-menu";
+  host.append(trigger, menu);
+
+  function refreshTrigger(){
+    const meta = THEME_META[state.theme]||THEME_META.navy;
+    sw.style.background = meta.swatch; lbl.textContent = meta.label;
+  }
+  refreshTrigger();
+
+  Object.entries(THEME_META).forEach(([key, meta])=>{
+    const item = document.createElement("div"); item.className="theme-item";
+    const s = document.createElement("span"); s.className="swatch"; s.style.background = meta.swatch;
+    const t = document.createElement("span"); t.textContent = meta.label;
+    item.append(s,t); menu.appendChild(item);
+    item.onclick = ()=>{ state.theme = key; save(); document.body.setAttribute("data-theme", state.theme); refreshTrigger(); menu.classList.remove("open"); };
+  });
+  trigger.onclick = (e)=>{ e.stopPropagation(); menu.classList.toggle("open"); };
+  document.addEventListener("click", ()=> menu.classList.remove("open"));
+}
+
+function renderSettingsPanels(){
+  const host = qs("#settingsPanel"); host.innerHTML="";
+  function selectTab(key){
+    qsa(".modal .tabs .tab").forEach(t=> t.classList.toggle("active", t.dataset.tab===key));
+    host.innerHTML="";
+    if(key==="general"){
+      const d = document.createElement("div");
+      d.innerHTML = `
+        <div class="field">
+          <label>Theme</label>
+          <div id="themePicker" class="theme-picker"></div>
+        </div>
+        <div class="divider"></div>
+        <div class="field">
+          <label>Tab Names</label>
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
+            <input id="fbTabName" class="input" placeholder="Fastbridge tab name" />
+            <input id="plTabName" class="input" placeholder="IEP/Evals tab name" />
+          </div>
+        </div>
+      `;
+      host.appendChild(d);
+      buildThemePicker(qs("#themePicker"));
+      qs("#fbTabName").value = state.settings.fastbridge.tabName || "";
+      qs("#plTabName").value = state.settings.plans.tabName || "";
+      qs("#fbTabName").oninput = (e)=>{ state.settings.fastbridge.tabName=e.target.value; save(); renderAppNav(); };
+      qs("#plTabName").oninput = (e)=>{ state.settings.plans.tabName=e.target.value; save(); renderAppNav(); };
+    }
+    if(key==="fastbridge"){
+      const d = document.createElement("div");
+      d.innerHTML = `
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">
+          <div class="field">
+            <label>Alert Mode</label>
+            <select id="alertModeSel" class="select">
+              <option value="neither">Neither</option>
+              <option value="a">A Reading only</option>
+              <option value="auto">Auto Reading only</option>
+              <option value="both">Both</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Animation</label>
+            <select id="animStyleSel" class="select">
+              <option value="none">None</option>
+              <option value="explosion">Explosion</option>
+              <option value="snap">Thanos Snap</option>
+              <option value="ripple">Ripple</option>
+              <option value="confetti">Confetti</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Show “Show dates” toggle in toolbar</label>
+            <select id="datesToggleVisible" class="select">
+              <option value="true">Show</option>
+              <option value="false">Hide</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Show “Show notes” toggle in toolbar</label>
+            <select id="notesToggleVisible" class="select">
+              <option value="true">Show</option>
+              <option value="false">Hide</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Show Progress Chips</label>
+            <select id="progressChipsSel" class="select">
+              <option value="true">Yes</option>
+              <option value="false">No</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Column Labels</label>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <input id="labelA" class="input" placeholder="A Reading column label" />
+              <input id="labelAuto" class="input" placeholder="Auto Reading column label" />
+            </div>
+          </div>
+        </div>
+      `;
+      host.appendChild(d);
+      qs("#alertModeSel").value = state.settings.fastbridge.alertMode || "both";
+      qs("#animStyleSel").value = state.settings.fastbridge.animationStyle || "explosion";
+      qs("#datesToggleVisible").value = String(!!state.settings.fastbridge.datesToggleVisible);
+      qs("#notesToggleVisible").value = String(!!state.settings.fastbridge.notesToggleVisible);
+      qs("#progressChipsSel").value = String(!!state.settings.fastbridge.progressChips);
+      qs("#labelA").value = state.settings.fastbridge.labelA || "";
+      qs("#labelAuto").value = state.settings.fastbridge.labelAuto || "";
+      qs("#alertModeSel").onchange = (e)=>{ state.settings.fastbridge.alertMode=e.target.value; save(); renderFastbridge(); };
+      qs("#animStyleSel").onchange = (e)=>{
+        state.settings.fastbridge.animationStyle=e.target.value; save();
+        const r = e.target.getBoundingClientRect();
+        playFxAt(r.left + r.width/2, r.top + r.height/2, state.settings.fastbridge.animationStyle);
+      };
+      qs("#datesToggleVisible").onchange = (e)=>{ state.settings.fastbridge.datesToggleVisible=(e.target.value==="true"); save(); renderFastbridge(); };
+      qs("#notesToggleVisible").onchange = (e)=>{ state.settings.fastbridge.notesToggleVisible=(e.target.value==="true"); save(); renderFastbridge(); };
+      qs("#progressChipsSel").onchange = (e)=>{ state.settings.fastbridge.progressChips=(e.target.value==="true"); save(); renderFastbridge(); };
+      qs("#labelA").oninput = (e)=>{ state.settings.fastbridge.labelA=e.target.value; save(); renderFastbridge(); };
+      qs("#labelAuto").oninput = (e)=>{ state.settings.fastbridge.labelAuto=e.target.value; save(); renderFastbridge(); };
+    }
+    if(key==="plans"){
+      const d = document.createElement("div");
+      d.innerHTML = `
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">
+          <div class="field">
+            <label>Days before to mark as “Upcoming”</label>
+            <input id="upcomingDays" type="number" class="input" min="1" value="14" />
+          </div>
+          <div class="field">
+            <label>Show notes preview in table</label>
+            <select id="notesPreviewSel" class="select">
+              <option value="false">No</option>
+              <option value="true">Yes</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Column Labels</label>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <input id="labelEval" class="input" placeholder="Evaluation column label" />
+              <input id="labelIEP" class="input" placeholder="IEP column label" />
+            </div>
+          </div>
+        </div>
+      `;
+      host.appendChild(d);
+      qs("#upcomingDays").value = state.settings.plans.upcomingDays||14;
+      qs("#notesPreviewSel").value = String(!!state.settings.plans.showNotesPreview);
+      qs("#labelEval").value = state.settings.plans.labelEval || "";
+      qs("#labelIEP").value = state.settings.plans.labelIEP || "";
+      qs("#upcomingDays").onchange = (e)=>{ state.settings.plans.upcomingDays=Math.max(1,Number(e.target.value)||14); save(); renderPlans(); };
+      qs("#notesPreviewSel").onchange = (e)=>{ state.settings.plans.showNotesPreview=(e.target.value==="true"); save(); renderPlans(); };
+      qs("#labelEval").oninput = (e)=>{ state.settings.plans.labelEval=e.target.value; save(); renderPlans(); };
+      qs("#labelIEP").oninput = (e)=>{ state.settings.plans.labelIEP=e.target.value; save(); renderPlans(); };
+    }
+  }
+  selectTab("general");
+  qsa("#settingsTabs .tab").forEach(tab=> tab.onclick = ()=> selectTab(tab.dataset.tab));
+}
+
+/* ===================== Events - Global ===================== */
+qs("#openSettings").onclick = ()=>{ openModal("settingsModal"); renderSettingsPanels(); };
+qs("#closeSettings").onclick = ()=> closeModal("settingsModal");
+
+qs("#nameFormat").onchange = (e)=>{ state.nameFormat=e.target.value; save(); renderAll(); };
+qs("#nameFormat2").onchange = (e)=>{ state.nameFormat=e.target.value; save(); renderAll(); };
+
+qs("#triSelect").onchange = (e)=>{ state.settings.fastbridge.trimester=e.target.value; save(); renderFastbridge(); };
+qs("#missingOnlyPill").onclick = ()=>{ state.settings.fastbridge.missingOnly = !state.settings.fastbridge.missingOnly; save(); renderFastbridge(); };
+qs("#datesToolbarWrap").onclick = ()=>{ if(!state.settings.fastbridge.datesToggleVisible) return; state.settings.fastbridge.datesShown=!state.settings.fastbridge.datesShown; save(); renderFastbridge(); };
+qs("#notesToolbarWrap").onclick = ()=>{ if(!state.settings.fastbridge.notesToggleVisible) return; state.settings.fastbridge.notesShown=!state.settings.fastbridge.notesShown; save(); renderFastbridge(); };
+qs("#toggleSearchNotes").onclick = ()=>{ state.searchNotesFB = !state.searchNotesFB; save(); renderFastbridge(); };
+
+qs("#searchBox").oninput = (e)=>{ state.search=e.target.value; save(); renderFastbridge(); };
+
+qs("#addStudentBtn").onclick = ()=>{
+  const name = prompt("Student name:"); if(!name) return;
+  const o = parseName(name);
+  pushStudentToClass(getClass(), {id:crypto.randomUUID(), name:o?.name||name.trim(), first:o?.first, last:o?.last});
+  save(); renderFastbridge();
+};
+/* Bulk Add */
+const bulkPrev = qs("#bulkPreview"); let bulkParsed=[];
+function openBulk(){ qs("#bulkTextarea").value=""; bulkPrev.innerHTML=""; bulkParsed=[]; openModal("bulkModal"); }
+qs("#bulkAddBtn").onclick = openBulk;
+qs("#bulkCancelBtn").onclick = ()=> closeModal("bulkModal");
+function splitLines(text){ return text.replace(/\r\n/g,"\n").replace(/\r/g,"\n").split(/\n/); }
+qs("#bulkPreviewBtn").onclick = ()=>{
+  const linesRaw = splitLines(qs("#bulkTextarea").value);
+  const lines = linesRaw.map(s=>s.trim()).filter(Boolean);
+  bulkParsed=[]; const set=new Set(); bulkPrev.innerHTML="";
+  lines.forEach(line=>{
+    const o=parseName(line); if(!o) return;
+    const label=(o.first||o.last)?(`${o.first||""} ${o.last||""}`.trim()):o.name;
+    const key=label.toLowerCase(); if(set.has(key)) return; set.add(key);
+    bulkParsed.push(o);
+    const chip=document.createElement("span"); chip.className="pill"; chip.textContent=label; bulkPrev.appendChild(chip);
+  });
+};
+qs("#bulkConfirmBtn").onclick = ()=>{
+  const text = qs("#bulkTextarea").value;
+  const items = bulkParsed.length ? bulkParsed : splitLines(text).map(s=>s.trim()).filter(Boolean).map(parseName).filter(Boolean);
+  if(!items.length){ alert("No names found."); return; }
+  const cls=getClass();
+  items.forEach(o=> pushStudentToClass(cls, {id:crypto.randomUUID(), name:o.name||(`${o.first||""} ${o.last||""}`).trim(), first:o.first, last:o.last}));
+  save(); closeModal("bulkModal"); renderFastbridge();
+};
+
+/* Plans toolbar */
+qs("#planSearch").oninput = (e)=>{ state.search=e.target.value; save(); renderPlans(); };
+qs("#planFilter").onchange = (e)=>{ state.settings.plans.filter = e.target.value; save(); renderPlans(); };
+qs("#planSearchNotes").onclick = ()=>{ state.searchNotesPL = !state.searchNotesPL; save(); renderPlans(); };
+
+/* Modal helpers */
+function openModal(id){ const el=qs("#"+id); el.classList.add("open"); el.setAttribute("aria-hidden","false"); }
+function closeModal(id){ const el=qs("#"+id); el.classList.remove("open"); el.setAttribute("aria-hidden","true"); }
+qsa(".modal-backdrop").forEach(b=> b.addEventListener("click",(e)=>{ if(e.target===b) b.classList.remove("open"); }));
+qs("#bulkModal").addEventListener("click",(e)=>{ if(e.target===qs("#bulkModal")) closeModal("bulkModal"); });
+
+/* ===================== Student Plans Modal ===================== */
+function openStudentModal(stuId){
+  const cls = getClass(); const s = cls.students.find(x=>x.id===stuId); if(!s) return;
+  qs("#stuTitle").textContent = fmtName(s);
+  const days = Number(state.settings.plans.upcomingDays)||14;
+
+  function renderList(key, hostId){
+    const host = qs("#"+hostId); host.innerHTML="";
+    (s.plans[key]||[]).sort((a,b)=> new Date(a.date)-new Date(b.date));
+
+    function chipFor(entry){
+      const wrap = document.createElement("div"); wrap.className="chip";
+      const dateBtn = document.createElement("span"); dateBtn.className="chip-date"; dateBtn.textContent = fmtDateMDY2(entry.date||todayISO());
+      wrap.appendChild(dateBtn);
+      const hidden = document.createElement("input"); hidden.type="date"; hidden.style.position="fixed"; hidden.style.opacity="0"; hidden.style.pointerEvents="none";
+      hidden.value = entry.date || todayISO();
+      hidden.onchange = ()=>{ entry.date = hidden.value; save(); renderList(key,hostId); renderPlans(); };
+      wrap.appendChild(hidden);
+      dateBtn.onclick = ()=> hidden.showPicker ? hidden.showPicker() : hidden.click();
+
+      if(isOverdue(entry)){ const b=document.createElement("span"); b.className="badge due"; b.innerHTML='Overdue <span class="x" title="Dismiss">×</span>'; b.querySelector(".x").onclick=(ev)=>{ ev.stopPropagation(); entry.dismissed=true; save(); renderList(key,hostId); renderPlans(); }; wrap.appendChild(b); }
+      else if(isUpcoming(entry,days)){ const b=document.createElement("span"); b.className="badge warn"; b.innerHTML='Upcoming <span class="x" title="Dismiss">×</span>'; b.querySelector(".x").onclick=(ev)=>{ ev.stopPropagation(); entry.dismissed=true; save(); renderList(key,hostId); renderPlans(); }; wrap.appendChild(b); }
+
+      const dots = document.createElement("span"); dots.className="options"; dots.textContent="⋯"; dots.title="Options";
+      wrap.appendChild(dots);
+      const menu = document.createElement("div"); menu.className="menu hidden";
+      const btnComplete = document.createElement("button"); btnComplete.textContent = entry.completed?"Mark Uncompleted":"Mark Completed";
+      btnComplete.onclick = (ev)=>{ ev.stopPropagation(); entry.completed=!entry.completed; save(); renderList(key,hostId); renderPlans(); };
+      const btnUndismiss = document.createElement("button"); btnUndismiss.textContent="Undismiss"; btnUndismiss.onclick = (ev)=>{ ev.stopPropagation(); entry.dismissed=false; save(); renderList(key,hostId); renderPlans(); };
+      const btnDelete = document.createElement("button"); btnDelete.textContent="Delete"; btnDelete.onclick = (ev)=>{ ev.stopPropagation(); if(confirm("Delete this entry?")){ s.plans[key] = s.plans[key].filter(x=>x.id!==entry.id); save(); renderList(key,hostId); renderPlans(); } };
+      menu.append(btnComplete, btnUndismiss, btnDelete);
+      wrap.appendChild(menu);
+      function toggleMenu(ev){ ev?.stopPropagation(); const open = !menu.classList.contains("hidden"); qsa(".menu", host).forEach(m=> m.classList.add("hidden")); if(!open) menu.classList.remove("hidden"); }
+      dots.onclick = toggleMenu;
+      document.addEventListener("click", ()=> menu.classList.add("hidden"), {once:true});
+
+      if(entry.notes && entry.notes.length){
+        entry.notes.forEach((t,idx)=>{
+          const li = document.createElement("div"); li.style.display="flex"; li.style.gap="6px"; li.style.alignItems="center";
+          const ta = document.createElement("textarea"); ta.className="note-input"; ta.value = t; ta.rows = 2;
+          ta.onblur = ()=>{ entry.notes[idx] = ta.value; save(); };
+          const rm = document.createElement("button"); rm.className="btn bad"; rm.textContent="Remove"; rm.style.display="none";
+          rm.onclick = ()=>{ entry.notes.splice(idx,1); save(); renderList(key,hostId); renderPlans(); };
+          dots.addEventListener("click", ()=>{ rm.style.display = (menu.classList.contains("hidden")?"none":"inline-block"); });
+          li.append(ta, rm); wrap.appendChild(li);
+        });
+      }
+      const addWrap = document.createElement("div"); addWrap.style.display="flex"; addWrap.style.gap="6px"; addWrap.style.alignItems="center";
+      const note = document.createElement("input"); note.className="input"; note.placeholder="Add note and press Enter";
+      note.onkeydown = (e)=>{ if(e.key==="Enter" && note.value.trim()){ entry.notes ||= []; entry.notes.push(note.value.trim()); note.value=""; save(); renderList(key,hostId); renderPlans(); } };
+      addWrap.appendChild(note);
+      wrap.appendChild(addWrap);
+
+      return wrap;
+    }
+
+    (s.plans[key]||[]).forEach(entry=> host.appendChild(chipFor(entry)));
+  }
+
+  qs("#addEval").onclick = ()=>{
+    const v = qs("#evalDate").value || todayISO(); s.plans.evals.push({id:crypto.randomUUID(), date:v, notes:[], dismissed:false, completed:false});
+    save(); qs("#evalDate").value=""; renderList("evals","evalList"); renderPlans();
+  };
+  qs("#addIEP").onclick = ()=>{
+    const v = qs("#iepDate").value || todayISO(); s.plans.ieps.push({id:crypto.randomUUID(), date:v, notes:[], dismissed:false, completed:false});
+    save(); qs("#iepDate").value=""; renderList("ieps","iepList"); renderPlans();
+  };
+
+  renderList("evals","evalList");
+  renderList("ieps","iepList");
+
+  openModal("studentModal");
+}
+qs("#stuClose").onclick = ()=> closeModal("studentModal");
+qs("#studentModal").addEventListener("click",(e)=>{ if(e.target===qs("#studentModal")) closeModal("studentModal"); });
+
+/* ===================== Effects ===================== */
+function playFxAt(x,y, style){
+  if(style==="none") return; // disabled
+  if(style==="explosion") fxExplosion(x,y);
+  else if(style==="ripple") fxRippleFancy(x,y);
+  else if(style==="confetti") fxConfettiStar(x,y);
+  else if(style==="snap") fxSnapDust(x,y);
+}
+const fxLayer = qs("#fxLayer");
+function rnd(a,b){ return Math.random()*(b-a)+a; }
+
+/* Explosion: radial dots */
+function fxExplosion(x,y){
+  for(let i=0;i<16;i++){
+    const d=document.createElement("div"); d.className="fx-dot"; d.style.background="#7db4ff";
+    d.style.left=x+"px"; d.style.top=y+"px"; fxLayer.appendChild(d);
+    const ang=rnd(0,2*Math.PI), dist=rnd(30,70), dx=Math.cos(ang)*dist, dy=Math.sin(ang)*dist;
+    d.animate([{transform:"translate(0,0)",opacity:1},{transform:`translate(${dx}px,${dy}px)`,opacity:0}],{duration:350, easing:"ease-out"}).onfinish=()=>d.remove();
+  }
+}
+
+/* Ripple (fancy): two rings + sparkles */
+function fxRippleFancy(x,y){
+  const makeRing=(scaleEnd, dur, delay=0)=>{
+    const r=document.createElement("div");
+    r.style.position="absolute"; r.style.left=(x-2)+"px"; r.style.top=(y-2)+"px";
+    r.style.width="4px"; r.style.height="4px"; r.style.border="2px solid #7db4ff"; r.style.borderRadius="50%";
+    fxLayer.appendChild(r);
+    r.animate(
+      [{transform:"scale(1)",opacity:.9},{transform:`scale(${scaleEnd})`,opacity:0}],
+      {duration:dur, delay:delay, easing:"cubic-bezier(.2,.8,.2,1)"}
+    ).onfinish=()=>r.remove();
+  };
+  makeRing(12,520,0);
+  makeRing(8,420,60);
+
+  // Sparkles
+  for(let i=0;i<10;i++){
+    const s=document.createElement("div"); s.className="fx-dot";
+    const size=rnd(1.5,3); s.style.width=size+"px"; s.style.height=size+"px"; s.style.background="#dbe7ff";
+    s.style.left=x+"px"; s.style.top=y+"px"; fxLayer.appendChild(s);
+    const ang = rnd(0,2*Math.PI); const dist=rnd(30,90);
+    const dx = Math.cos(ang)*dist; const dy=Math.sin(ang)*dist*0.8;
+    s.animate(
+      [{transform:"translate(0,0)",opacity:.95},{transform:`translate(${dx}px,${dy-10}px)`,opacity:.6},{transform:`translate(${dx}px,${dy}px)`,opacity:0}],
+      {duration:rnd(500,700),easing:"ease-out"}
+    ).onfinish=()=>s.remove();
+  }
+}
+
+/* Confetti: starburst all directions */
+function fxConfettiStar(x,y){
+  const colors = ["#7db4ff","#22c55e","#facc15","#ef4444","#a78bfa","#2dd4bf"];
+  const pieces = 22;
+  for(let i=0;i<pieces;i++){
+    const c=document.createElement("div"); c.className="fx-confetti";
+    c.style.left=x+"px"; c.style.top=y+"px";
+    c.style.background = colors[i%colors.length];
+    c.style.borderRadius = "2px";
+    fxLayer.appendChild(c);
+    const ang = (i/pieces)*2*Math.PI + rnd(-0.12,0.12);
+    const dist = rnd(60,130);
+    const dx = Math.cos(ang)*dist;
+    const dy = Math.sin(ang)*dist;
+    const rot = rnd(-270,270);
+    c.animate(
+      [
+        { transform:"translate(0,0) rotate(0deg)", opacity:1 },
+        { transform:`translate(${dx}px,${dy}px) rotate(${rot}deg)`, opacity:0 }
+      ],
+      { duration:rnd(550,800), easing:"cubic-bezier(.15,.8,.25,1)" }
+    ).onfinish=()=>c.remove();
+  }
+}
+
+/* Thanos Snap — drifting dust */
+function fxSnapDust(x,y){
+  const particles = 60;
+  for(let i=0;i<particles;i++){
+    const d=document.createElement("div"); d.className="fx-dot";
+    const size = rnd(1.2,3.2);
+    d.style.width=size+"px"; d.style.height=size+"px";
+    d.style.background = ["#cfd8ff","#e5ecff","#bfd0ff","#d8e1ff"][i%4];
+    d.style.left=x+"px"; d.style.top=y+"px";
+    fxLayer.appendChild(d);
+    const spread = rnd(-8,8);
+    const wind = rnd(60,130);
+    const rise = rnd(-70,20);
+    const wobbleX = rnd(-12,12);
+    const wobbleY = rnd(-10,10);
+
+    const keyframes = [
+      { transform:`translate(${spread}px, ${spread}px) scale(1)`, opacity:0.95, offset:0 },
+      { transform:`translate(${wind*0.4 + wobbleX}px, ${rise*0.3 + wobbleY}px) scale(.9)`, opacity:0.6, offset:0.5 },
+      { transform:`translate(${wind}px, ${rise}px) scale(.85)`, opacity:0 }
+    ];
+    d.animate(keyframes,{duration:rnd(800,1200), easing:"ease-out"}).onfinish=()=>d.remove();
+  }
+}
+
+/* ===================== Keyboard Shortcuts ===================== */
+document.addEventListener("keydown",(ev)=>{
+  if(ev.target.matches("input, textarea")) return;
+  if(ev.key==="/"){ ev.preventDefault(); if(state.activeScreen==="fastbridge") qs("#searchBox").focus(); else if(state.activeScreen==="plans") qs("#planSearch").focus(); return; }
+  if(ev.key==="1"){ state.settings.fastbridge.trimester="T1"; save(); if(state.activeScreen==="fastbridge") renderFastbridge(); return; }
+  if(ev.key==="2"){ state.settings.fastbridge.trimester="T2"; save(); if(state.activeScreen==="fastbridge") renderFastbridge(); return; }
+  if(ev.key==="3"){ state.settings.fastbridge.trimester="T3"; save(); if(state.activeScreen==="fastbridge") renderFastbridge(); return; }
+  if(ev.key==="0"){ state.settings.fastbridge.trimester="All"; save(); if(state.activeScreen==="fastbridge") renderFastbridge(); return; }
+  if(ev.key==="n"){ if(state.activeScreen==="fastbridge") qs("#addStudentBtn").click(); return; }
+  if(ev.key==="b"){ if(state.activeScreen==="fastbridge") qs("#bulkAddBtn").click(); return; }
+  if(ev.key==="f"){ setActiveScreen("fastbridge"); return; }
+  if(ev.key==="p"){ setActiveScreen("plans"); return; }
+});
+
+/* ===================== Initial Render ===================== */
+function countFastbridge(students, tri){
+  const A={done:0,total:students.length}, U={done:0,total:students.length};
+  students.forEach(st=>{ if(st.fast.a[tri]?.done) A.done++; if(st.fast.auto[tri]?.done) U.done++; });
+  return [A,U];
+}
+function renderAll(){ renderClassTabs(); renderAppNav(); applyScreen(); }
+renderAll();
+</script>
+</body>
+</html>
