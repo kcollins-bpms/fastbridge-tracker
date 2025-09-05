@@ -65,6 +65,7 @@
   .btn:hover{filter:brightness(1.06)}
   .btn.accent{background:var(--accent);color:#041222;border-color:#7db4ff;font-weight:700}
   .btn.bad{background:#5b1620;border-color:#912636;color:#ffeef0}
+  .btn.tiny{padding:4px 8px;font-size:12px;border-radius:8px;display:inline-flex;align-items:center;line-height:1}
   .card{background:var(--menu-bg);border:1px solid var(--menu-border);border-radius:16px;padding:16px;box-shadow:var(--shadow);margin-top:12px}
   .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}
   .pill{padding:6px 10px;border-radius:999px;border:1px solid var(--panel-border);background:var(--panel-bg);color:#cfe0ff;cursor:pointer;user-select:none}
@@ -77,30 +78,42 @@
   .spacer{flex:1}
   .divider{height:1px;background:var(--panel-border);margin:8px 0 12px 0;border-radius:999px}
 
-  .table-wrap{overflow:auto;} /* allow horizontal scroll if user makes cols wide */
-  table.table{width:max(100%, 820px); border-collapse:separate; border-spacing:0 8px}
-  col { width:auto; }
+  /* Table */
+  .table-wrap{overflow-y:auto; overflow-x:hidden;}
+  /* Themed vertical scrollbar */
+  .table-wrap{ scrollbar-width: thin; scrollbar-color: var(--btn-border) var(--panel-bg); }
+  .table-wrap::-webkit-scrollbar{ width:10px; height:10px; }
+  .table-wrap::-webkit-scrollbar-track{ background:var(--panel-bg); border-radius:8px; }
+  .table-wrap::-webkit-scrollbar-thumb{ background:var(--btn-border); border-radius:8px; }
+  .table-wrap::-webkit-scrollbar-thumb:hover{ background:var(--accent); }
+
+  table.table{width:100%; table-layout:fixed; border-collapse:separate; border-spacing:0 8px}
   .thead .th{text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:#d6defb;opacity:.9;padding:6px 8px;white-space:nowrap;position:relative}
-  .col-resizer{position:absolute; top:0; right:-3px; width:8px; height:100%; cursor:col-resize; }
+  .col-resizer{position:absolute; top:0; right:-3px; width:8px; height:100%; cursor:col-resize;}
   .col-resizer::after{content:""; position:absolute; top:6px; bottom:6px; left:3px; width:2px; background:var(--panel-border); border-radius:2px; opacity:.6}
   .resizing .col-resizer::after{background:var(--accent); opacity:1}
 
-  .tr{background:var(--panel-bg);border:1px solid var(--panel-border);border-radius:12px;overflow:hidden}
-  tbody .tr:nth-child(even){background: linear-gradient(0deg, rgba(255,255,255,.04), rgba(255,255,255,.04)), var(--panel-bg);}
+  /* Safari-friendly row styling: style TDs instead of TR */
+  tbody tr td{ background:var(--panel-bg); border-top:1px solid var(--panel-border); border-bottom:1px solid var(--panel-border); }
+  tbody tr:nth-child(even) td{ background: linear-gradient(0deg, rgba(255,255,255,.04), rgba(255,255,255,.04)), var(--panel-bg); }
+  tbody tr td:first-child{ border-left:1px solid var(--panel-border); border-radius:12px 0 0 12px; }
+  tbody tr td:last-child{ border-right:1px solid var(--panel-border); border-radius:0 12px 12px 0; }
+
   .td{padding:8px;vertical-align:middle}
-  .name-cell{padding:10px 12px;font-weight:800;line-height:1.2;background:transparent;display:flex;align-items:center;gap:8px}
+  .name-cell{padding:10px 12px;font-weight:800;line-height:1.2;display:flex;align-items:center;gap:8px}
+  .name-badges{display:flex;gap:6px;align-items:center;margin-left:auto}
   .badge{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:999px;font-weight:800;font-size:12px;border:1px solid #2a7a4a;background:#163a24;color:#aaffc5}
   .badge.warn{background:#3a2d16;border-color:#9a7b2f;color:#ffe7b9}
   .badge.due{background:#4a1420;border-color:#b03a4a;color:#ffdede}
-  .badge .x{display:inline-block;margin-left:6px;opacity:.8;cursor:pointer;font-weight:900}
+  .badge.complete{background:#163a24;border-color:#2a7a4a;color:#aaffc5}
+  .badge .x{display:inline-block;margin-left:6px;opacity:.85;cursor:pointer;font-weight:900}
   .checkbox{appearance:none;width:22px;height:22px;border-radius:6px;border:2px solid var(--btn-border);background:var(--field-bg);display:inline-grid;place-items:center;cursor:pointer;position:relative;outline:none}
   .checkbox:checked{background:var(--accent);border-color:#8dbaff}
   .checkbox:checked::after{content:"✓";color:#041222;font-weight:900;font-size:14px}
   .mini{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
   .mini .input{width:140px}
-  .hidden{display:none !important}
-  .name-badges{display:flex;gap:6px;align-items:center;margin-left:auto}
   .progress-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;border:1px solid var(--chip-border);background:var(--panel-bg);font-weight:800}
+  .hidden{display:none !important}
 
   /* Modals */
   .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:70}
@@ -109,18 +122,13 @@
   #settingsModal .modal{height:88vh;max-height:88vh;display:flex;flex-direction:column}
   #settingsModal .modal .tabs{flex:0 0 auto}
   #settingsPanel.modal-body{flex:1 1 auto;overflow:auto;min-height:0}
-  #studentModal .modal{height:90vh;max-height:90vh;display:flex;flex-direction:column;width:min(1200px,96vw)}
+  #studentModal .modal{height:92vh;max-height:92vh;display:flex;flex-direction:column;width:min(1200px,96vw)}
   #studentModal .modal .modal-body{flex:1 1 auto;overflow:auto;min-height:0}
   .modal .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
   .modal .tabs .tab{padding:6px 10px;border-radius:999px;border:1px solid var(--panel-border);background:var(--panel-bg);cursor:pointer}
   .modal .tabs .tab.active{background:var(--accent);color:#041222;border-color:#7db4ff;font-weight:800}
   .field{display:flex;flex-direction:column;gap:6px}
   .kbd{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:#0b1735;border:1px solid #2c3f7a;border-radius:6px;padding:2px 6px;font-size:12px;color:#dfe7ff}
-  * { scrollbar-width: thin; scrollbar-color: var(--btn-border) var(--panel-bg) }
-  ::-webkit-scrollbar{width:10px;height:10px}
-  ::-webkit-scrollbar-track{background:var(--panel-bg);border-radius:10px}
-  ::-webkit-scrollbar-thumb{background:var(--btn-border);border-radius:10px;border:2px solid var(--panel-bg)}
-  ::-webkit-scrollbar-thumb:hover{background:var(--accent)}
 
   /* Effects layer for checkbox animations */
   .fx-layer{position:fixed;left:0;top:0;pointer-events:none;width:100vw;height:100vh;overflow:visible;z-index:9999}
@@ -128,9 +136,17 @@
   .fx-confetti{position:absolute;width:6px;height:10px;transform:rotate(0deg)}
 
   .row-wrap{display:flex;flex-wrap:wrap;gap:8px}
-  .chip{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;border:1px solid var(--panel-border);background:var(--panel-bg);font-weight:700}
+  .chip{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;border:1px solid var(--panel-border);background:var(--panel-bg);font-weight:700;position:relative}
   .chip-date{padding:2px 8px;border-radius:999px;background:linear-gradient(180deg,var(--bg-2),var(--bg-3));border:1px solid var(--panel-border)}
   .chip .options{cursor:pointer;opacity:.85}
+
+  /* Student-modal note fields themed */
+  .note-input{width:100%;background:var(--field-bg);color:var(--text);border:1px solid var(--panel-border);border-radius:8px;padding:8px}
+
+  /* Options dropdown inside chips (themed) */
+  .menu{position:absolute; top:36px; right:0; background:var(--menu-bg); border:1px solid var(--menu-border); border-radius:10px; padding:6px; display:flex; gap:6px; box-shadow:var(--shadow); z-index:10}
+  .menu.hidden{display:none !important}
+  .menu .btn{font-size:12px; padding:4px 8px}
 
   /* Custom theme picker */
   .theme-picker{position:relative;display:inline-block}
@@ -185,6 +201,7 @@
         <div class="toggle-pair">
           <label id="datesToolbarWrap" class="pill" title="Toggle date pickers for visible checkboxes">Show dates</label>
           <label id="notesToolbarWrap" class="pill" title="Toggle note fields for visible checkboxes">Show notes</label>
+          <label id="removeModeWrap" class="pill" title="Show remove buttons for students">Remove students</label>
         </div>
 
         <!-- Right-aligned progress chips -->
@@ -247,6 +264,7 @@ Weasley, Ron"></textarea>
       <div style="display:flex;gap:8px;align-items:center;">
         <h3 id="stuTitle" style="margin:0">Student</h3>
         <div class="spacer"></div>
+        <button id="removeStudentInModal" class="btn bad">Remove Student</button>
         <button id="stuClose" class="btn accent">Close</button>
       </div>
       <div class="divider"></div>
@@ -294,8 +312,33 @@ Weasley, Ron"></textarea>
   <div id="fxLayer" class="fx-layer" aria-hidden="true"></div>
 
 <script>
-/* ===================== State ===================== */
-const STORAGE_KEY = "fastbridge_iep_tracker_v11";
+/* ===================== STORAGE (stable + migration) ===================== */
+const STORAGE_KEY = "fastbridge_iep_tracker";
+const LEGACY_PREFIX = "fastbridge_iep_tracker_v";
+
+function safeParse(raw){ try{ return JSON.parse(raw); }catch{ return null; } }
+function migrateIfNeeded(){
+  const existing = localStorage.getItem(STORAGE_KEY);
+  if(existing) return safeParse(existing);
+  const candidates = [];
+  for(let i=0;i<localStorage.length;i++){
+    const k = localStorage.key(i);
+    if(k && k.startsWith(LEGACY_PREFIX)){
+      const v = Number((k.match(/v(\d+)/)||[])[1]||0);
+      const val = safeParse(localStorage.getItem(k));
+      if(val) candidates.push({k,v,val});
+    }
+  }
+  if(candidates.length){
+    candidates.sort((a,b)=> b.v - a.v);
+    const chosen = candidates[0].val;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(chosen));
+    return chosen;
+  }
+  return null;
+}
+
+/* ===================== DEFAULT STATE ===================== */
 const DEFAULT_STATE = {
   classes: [{ id: crypto.randomUUID(), name: "Period 1", students: [] }],
   activeClassId: null,
@@ -316,9 +359,11 @@ const DEFAULT_STATE = {
       notesShown: false,
       datesToggleVisible: true,
       notesToggleVisible: true,
-      animationStyle: "explosion", // 'none' disables
+      animationStyle: "explosion",
+      wildAnimations: false,        // NEW: “wilder animations” toggle
       progressChips: true,
       missingOnly: false,
+      removeMode: false,
       colWidths: {
         T1:   { name: 300, a: 220, auto: 220 },
         T2:   { name: 300, a: 220, auto: 220 },
@@ -337,9 +382,15 @@ const DEFAULT_STATE = {
   }
 };
 
-function safeParse(raw){ try{ return JSON.parse(raw); }catch{ return null; } }
-function load(){ const s = safeParse(localStorage.getItem(STORAGE_KEY)); return ensureState(s||DEFAULT_STATE); }
-function save(){ state._savedAt = Date.now(); localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+function load(){
+  const migrated = migrateIfNeeded();
+  const raw = migrated ?? safeParse(localStorage.getItem(STORAGE_KEY));
+  return ensureState(raw || DEFAULT_STATE);
+}
+function save(){
+  state._savedAt = Date.now();
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
 function ensureState(s){
   s.activeClassId ??= s.classes[0]?.id || null;
   if(!s.classes.some(c=>c.id===s.activeClassId)) s.activeClassId = s.classes[0]?.id || null;
@@ -349,6 +400,8 @@ function ensureState(s){
   ["T1","T2","T3","All"].forEach(k=>{
     fb.colWidths[k] ??= DEFAULT_STATE.settings.fastbridge.colWidths[k];
   });
+  if(typeof fb.removeMode!=="boolean") fb.removeMode=false;
+  if(typeof fb.wildAnimations!=="boolean") fb.wildAnimations=false;
   s.settings.plans ??= DEFAULT_STATE.settings.plans;
   return s;
 }
@@ -379,9 +432,9 @@ function parseName(line){
     return { name:t };
   }
 }
-function fmtDateMDY(iso){ if(!iso) return ""; const [y,m,d] = iso.split("-"); return (m+"/"+d+"/"+y); }
-function fmtDateMDY2(iso){ if(!iso) return ""; const [y,m,d]=iso.split("-"); return (m+"/"+d+"/"+y.slice(-2)); }
 function todayISO(){ const d=new Date(); const m=("0"+(d.getMonth()+1)).slice(-2); const day=("0"+d.getDate()).slice(-2); return d.getFullYear()+"-"+m+"-"+day; }
+function fmtDateMDY(iso){ if(!iso) return ""; const [y,m,d]=iso.split("-"); return (m+"/"+d+"/"+y); }
+function fmtDateMDY2(iso){ if(!iso) return ""; const [y,m,d]=iso.split("-"); return (m+"/"+d+"/"+y.slice(-2)); }
 function ensureStudent(st){
   const s = st||{};
   s.id ??= crypto.randomUUID();
@@ -460,7 +513,7 @@ function applyScreen(){
   if(state.activeScreen==="plans") renderPlans();
 }
 
-/* ===================== Fastbridge Render with Resizers ===================== */
+/* ===================== Fastbridge (with resizers & celebration) ===================== */
 function keysForTri(tri){
   return tri==="All"
     ? ["name","a_T1","a_T2","a_T3","auto_T1","auto_T2","auto_T3"]
@@ -486,7 +539,6 @@ function slotForKey(key, tri){
   }
   return ["a", tri];
 }
-
 function renderFastbridge(){
   const cls = getClass();
 
@@ -497,10 +549,12 @@ function renderFastbridge(){
 
   const datesLbl = qs("#datesToolbarWrap");
   const notesLbl = qs("#notesToolbarWrap");
+  const removeLbl = qs("#removeModeWrap");
   datesLbl.style.display = state.settings.fastbridge.datesToggleVisible ? "" : "none";
   notesLbl.style.display = state.settings.fastbridge.notesToggleVisible ? "" : "none";
   datesLbl.classList.toggle("active", !!state.settings.fastbridge.datesShown);
   notesLbl.classList.toggle("active", !!state.settings.fastbridge.notesShown);
+  removeLbl.classList.toggle("active", !!state.settings.fastbridge.removeMode);
 
   const fbSet = state.settings.fastbridge;
   const tri = fbSet.trimester;
@@ -524,14 +578,13 @@ function renderFastbridge(){
   const table = document.createElement("table"); table.className="table";
   const colgroup = document.createElement("colgroup");
   const thead = document.createElement("thead"); thead.className="thead";
-  const trh = document.createElement("tr"); trh.className="tr";
+  const trh = document.createElement("tr");
 
   const keys = keysForTri(tri);
-  // Build colgroup using stored widths
   const widths = (state.settings.fastbridge.colWidths[tri] ||= {});
   const defaultWidths = DEFAULT_STATE.settings.fastbridge.colWidths[tri];
 
-  keys.forEach((key, idx)=>{
+  keys.forEach((key)=>{
     const col = document.createElement("col");
     const w = widths[key] ?? defaultWidths[key] ?? (key==="name" ? 300 : 180);
     col.style.width = w + "px";
@@ -539,9 +592,8 @@ function renderFastbridge(){
     colgroup.appendChild(col);
 
     const th = document.createElement("th"); th.className="th"; th.textContent = humanLabel(key, labels);
-    // Add resizer handle (for all columns)
     const grip = document.createElement("span"); grip.className="col-resizer"; grip.title = "Drag to resize";
-    grip.addEventListener("mousedown", (e)=> startResize(e, key, col, th));
+    grip.addEventListener("mousedown", (e)=> startResize(e, key, col));
     th.appendChild(grip);
     trh.appendChild(th);
   });
@@ -553,7 +605,7 @@ function renderFastbridge(){
   const tbody = document.createElement("tbody");
 
   const q = (state.search||"").toLowerCase().trim();
-  let students = [...cls.students];
+  let students = [...cls.students].map(ensureStudent);
   if(q){
     students = students.filter(st=>{
       if(fmtName(st).toLowerCase().includes(q)) return true;
@@ -583,21 +635,33 @@ function renderFastbridge(){
     });
   }
 
+  function allDone(kind, T){ return cls.students.length>0 && cls.students.every(s=> !!ensureStudent(s).fast[kind][T].done ); }
+
   function makeCell(st, slot){
     const td = document.createElement("td"); td.className="td";
     if(!slot){ // name column
-      const tdName = td;
-      const nameSpan = document.createElement("span"); nameSpan.textContent = fmtName(st);
-      tdName.classList.add("name-cell");
-      tdName.appendChild(nameSpan);
+      td.classList.add("name-cell");
 
-      if(tri!=="All" && fbSet.alertMode!=="neither"){
-        const A = st.fast.a[tri]?.done;
-        const U = st.fast.auto[tri]?.done;
+      // Remove button (left of name, aligned)
+      if(state.settings.fastbridge.removeMode){
+        const rm = document.createElement("button"); rm.className="btn bad tiny"; rm.textContent="Remove";
+        rm.title="Remove student from this class";
+        rm.onclick = (ev)=>{ ev.stopPropagation(); if(confirm(`Remove ${fmtName(st)} from this class?`)){ const cls=getClass(); cls.students = cls.students.filter(x=>x.id!==st.id); save(); renderAll(); } };
+        td.appendChild(rm);
+      }
+
+      const nameSpan = document.createElement("span"); nameSpan.textContent = fmtName(st);
+      td.appendChild(nameSpan);
+
+      if(state.settings.fastbridge.trimester!=="All" && state.settings.fastbridge.alertMode!=="neither"){
+        const T = state.settings.fastbridge.trimester;
+        const A = st.fast.a[T]?.done;
+        const U = st.fast.auto[T]?.done;
         let msg=null;
-        if(fbSet.alertMode==="a" && !A) msg = `Needs: ${labels.A}`;
-        else if(fbSet.alertMode==="auto" && !U) msg = `Needs: ${labels.Auto}`;
-        else if(fbSet.alertMode==="both"){
+        const labels = {A: state.settings.fastbridge.labelA||"A Reading", Auto: state.settings.fastbridge.labelAuto||"Auto Reading"};
+        if(state.settings.fastbridge.alertMode==="a" && !A) msg = `Needs: ${labels.A}`;
+        else if(state.settings.fastbridge.alertMode==="auto" && !U) msg = `Needs: ${labels.Auto}`;
+        else if(state.settings.fastbridge.alertMode==="both"){
           if(!A && !U) msg = "Needs: Both";
           else if(!A) msg = `Needs: ${labels.A}`;
           else if(!U) msg = `Needs: ${labels.Auto}`;
@@ -605,23 +669,42 @@ function renderFastbridge(){
         if(msg){
           const badge = document.createElement("span"); badge.className="badge warn"; badge.textContent=msg;
           const nb = document.createElement("div"); nb.className="name-badges"; nb.appendChild(badge);
-          tdName.appendChild(nb);
+          td.appendChild(nb);
         }
       }
-      return tdName;
+      return td;
     }
 
     const box = document.createElement("div"); box.className="mini";
     const chk = document.createElement("input"); chk.type="checkbox"; chk.className="checkbox";
     chk.checked = !!st.fast[slot[0]][slot[1]].done;
+
+    const tri = state.settings.fastbridge.trimester;
+    const colKeyKind = slot[0];
+    const colKeyTri = slot[1];
+
+    let prevAll = false;
+    if(tri==="All"){ prevAll = allDone(colKeyKind, colKeyTri); }
+    else { prevAll = allDone(colKeyKind, tri); }
+
     chk.onchange = (e)=>{
       const r = chk.getBoundingClientRect();
-      playFxAt(r.left + r.width/2, r.top + r.height/2, state.settings.fastbridge.animationStyle);
+      playFxAt(r.left + r.width/2, r.top + r.height/2, state.settings.fastbridge.animationStyle, state.settings.fastbridge.wildAnimations);
+
       st.fast[slot[0]][slot[1]].done = !!e.target.checked;
       if(st.fast[slot[0]][slot[1]].done && state.settings.fastbridge.datesShown && !st.fast[slot[0]][slot[1]].date){
         if(confirm("No date selected. Set to today?")) st.fast[slot[0]][slot[1]].date = todayISO();
       }
-      save(); renderFastbridge();
+      save();
+
+      let nowAll = false;
+      if(tri==="All"){ nowAll = allDone(colKeyKind, colKeyTri); }
+      else { nowAll = allDone(colKeyKind, tri); }
+      if(!prevAll && nowAll){
+        playFxFullscreen(state.settings.fastbridge.animationStyle, state.settings.fastbridge.wildAnimations);
+      }
+
+      renderFastbridge();
     };
     box.appendChild(chk);
 
@@ -641,7 +724,7 @@ function renderFastbridge(){
   }
 
   students.forEach(st=>{
-    const tr = document.createElement("tr"); tr.className="tr";
+    const tr = document.createElement("tr");
     keys.forEach(key=>{
       const slot = slotForKey(key, tri);
       tr.appendChild(makeCell(st, slot));
@@ -654,16 +737,13 @@ function renderFastbridge(){
 }
 
 /* Column resize mechanics */
-let resizeState = null;
-function startResize(e, key, colEl, thEl){
+function startResize(e, key, colEl){
   e.preventDefault();
-  const tableWrap = qs("#fastbridgeTableWrap");
   const tri = state.settings.fastbridge.trimester;
   const widths = state.settings.fastbridge.colWidths[tri];
   const startX = e.clientX;
   const startWidth = parseFloat(colEl.style.width) || 160;
   document.body.classList.add("resizing");
-
   const minW = key==="name" ? 180 : 100;
   const maxW = 700;
 
@@ -675,8 +755,7 @@ function startResize(e, key, colEl, thEl){
   function onUp(ev){
     const dx = ev.clientX - startX;
     let w = Math.max(minW, Math.min(maxW, Math.round(startWidth + dx)));
-    widths[key] = w;
-    save();
+    widths[key] = w; save();
     document.removeEventListener("mousemove", onMove);
     document.removeEventListener("mouseup", onUp);
     document.body.classList.remove("resizing");
@@ -685,13 +764,13 @@ function startResize(e, key, colEl, thEl){
   document.addEventListener("mouseup", onUp);
 }
 
-/* ===================== Plans Render ===================== */
+/* ===================== Plans (IEP/Evals) ===================== */
 function renderPlans(){
   const cls = getClass();
   const wrap = qs("#plansTableWrap"); wrap.innerHTML="";
   const tbl = document.createElement("table"); tbl.className="table";
   const thead = document.createElement("thead"); thead.className="thead";
-  const trh = document.createElement("tr"); trh.className="tr";
+  const trh = document.createElement("tr");
   function th(text){ const el=document.createElement("th"); el.className="th"; el.textContent=text; return el; }
   trh.appendChild(th("Student"));
   trh.appendChild(th(state.settings.plans.labelEval||"Evaluation"));
@@ -732,20 +811,25 @@ function renderPlans(){
     const line = document.createElement("div");
     const span = document.createElement("span"); span.textContent = fmtDateMDY(entry.date);
     line.appendChild(span);
-    if(isOverdue(entry)){
+
+    if(entry.completed){
+      const b=document.createElement("span"); b.className="badge complete"; b.style.marginLeft="8px"; b.textContent="Completed";
+      line.appendChild(b);
+    }else if(isOverdue(entry)){
       const b=document.createElement("span"); b.className="badge due"; b.style.marginLeft="8px"; b.innerHTML='Overdue <span class="x" title="Dismiss">×</span>';
       b.querySelector(".x").onclick = (ev)=>{ ev.stopPropagation(); entry.dismissed=true; save(); renderPlans(); };
       line.appendChild(b);
     }else if(isUpcoming(entry, days)){
-      const b=document.createElement("span"); b.className="badge warn"; b.style.marginLeft="8px"; b.innerHTML='Upcoming <span class="x" title="Dismiss">×</span>';
+      const b=document.createElement("span"); b.className="badge warn"; b.style;marginLeft="8px"; b.innerHTML='Upcoming <span class="x" title="Dismiss">×</span>';
       b.querySelector(".x").onclick = (ev)=>{ ev.stopPropagation(); entry.dismissed=true; save(); renderPlans(); };
       line.appendChild(b);
     }
+
     td.appendChild(line);
     if(state.settings.plans.showNotesPreview){
       const last = (entry.notes||[]).slice(-1)[0] || "";
       if(last){
-        const pv = document.createElement("div"); pv.className="note-snippet";
+        const pv = document.createElement("div");
         const short = last.length>80 ? last.slice(0,80)+"…" : last;
         pv.innerHTML = `<span class="note-inline">${short}</span>${last.length>80?' <span class="more">(more)</span>':''}`;
         td.appendChild(pv);
@@ -770,7 +854,7 @@ function renderPlans(){
   });
 
   students.forEach(st=>{
-    const tr = document.createElement("tr"); tr.className="tr";
+    const tr = document.createElement("tr");
     const tdName = document.createElement("td"); tdName.className="td name-cell"; tdName.textContent = fmtName(st);
     tdName.onclick = ()=> openStudentModal(st.id);
     tr.appendChild(tdName);
@@ -852,7 +936,7 @@ function renderSettingsPanels(){
     if(key==="fastbridge"){
       const d = document.createElement("div");
       d.innerHTML = `
-        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
           <div class="field">
             <label>Alert Mode</label>
             <select id="alertModeSel" class="select">
@@ -872,6 +956,14 @@ function renderSettingsPanels(){
               <option value="confetti">Confetti</option>
             </select>
           </div>
+          <div class="field">
+            <label>Wilder animations</label>
+            <select id="wildAnimSel" class="select">
+              <option value="false">Off</option>
+              <option value="true">On</option>
+            </select>
+          </div>
+
           <div class="field">
             <label>Show “Show dates” toggle in toolbar</label>
             <select id="datesToggleVisible" class="select">
@@ -893,7 +985,8 @@ function renderSettingsPanels(){
               <option value="false">No</option>
             </select>
           </div>
-          <div class="field">
+
+          <div class="field" style="grid-column:1 / span 3">
             <label>Column Labels</label>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
               <input id="labelA" class="input" placeholder="A Reading column label" />
@@ -905,6 +998,7 @@ function renderSettingsPanels(){
       host.appendChild(d);
       qs("#alertModeSel").value = state.settings.fastbridge.alertMode || "both";
       qs("#animStyleSel").value = state.settings.fastbridge.animationStyle || "explosion";
+      qs("#wildAnimSel").value = String(!!state.settings.fastbridge.wildAnimations);
       qs("#datesToggleVisible").value = String(!!state.settings.fastbridge.datesToggleVisible);
       qs("#notesToggleVisible").value = String(!!state.settings.fastbridge.notesToggleVisible);
       qs("#progressChipsSel").value = String(!!state.settings.fastbridge.progressChips);
@@ -914,7 +1008,12 @@ function renderSettingsPanels(){
       qs("#animStyleSel").onchange = (e)=>{
         state.settings.fastbridge.animationStyle=e.target.value; save();
         const r = e.target.getBoundingClientRect();
-        playFxAt(r.left + r.width/2, r.top + r.height/2, state.settings.fastbridge.animationStyle);
+        playFxAt(r.left + r.width/2, r.top + r.height/2, state.settings.fastbridge.animationStyle, state.settings.fastbridge.wildAnimations);
+      };
+      qs("#wildAnimSel").onchange = (e)=>{
+        state.settings.fastbridge.wildAnimations=(e.target.value==="true"); save();
+        const r = e.target.getBoundingClientRect();
+        playFxAt(r.left + r.width/2, r.top + r.height/2, state.settings.fastbridge.animationStyle, state.settings.fastbridge.wildAnimations);
       };
       qs("#datesToggleVisible").onchange = (e)=>{ state.settings.fastbridge.datesToggleVisible=(e.target.value==="true"); save(); renderFastbridge(); };
       qs("#notesToggleVisible").onchange = (e)=>{ state.settings.fastbridge.notesToggleVisible=(e.target.value==="true"); save(); renderFastbridge(); };
@@ -972,7 +1071,8 @@ qs("#triSelect").onchange = (e)=>{ state.settings.fastbridge.trimester=e.target.
 qs("#missingOnlyPill").onclick = ()=>{ state.settings.fastbridge.missingOnly = !state.settings.fastbridge.missingOnly; save(); renderFastbridge(); };
 qs("#datesToolbarWrap").onclick = ()=>{ if(!state.settings.fastbridge.datesToggleVisible) return; state.settings.fastbridge.datesShown=!state.settings.fastbridge.datesShown; save(); renderFastbridge(); };
 qs("#notesToolbarWrap").onclick = ()=>{ if(!state.settings.fastbridge.notesToggleVisible) return; state.settings.fastbridge.notesShown=!state.settings.fastbridge.notesShown; save(); renderFastbridge(); };
-qs("#toggleSearchNotes").onclick = ()=>{ state.searchNotesFB = !state.searchNotesFB; save(); renderFastbridge(); };
+qs("#removeModeWrap").onclick = (e)=>{ state.settings.fastbridge.removeMode=!state.settings.fastbridge.removeMode; save(); e.currentTarget.classList.toggle("active", state.settings.fastbridge.removeMode); renderFastbridge(); };
+qs("#toggleSearchNotes").onclick = (e)=>{ state.searchNotesFB = !state.searchNotesFB; save(); e.currentTarget.classList.toggle("active", state.searchNotesFB); renderFastbridge(); };
 
 qs("#searchBox").oninput = (e)=>{ state.search=e.target.value; save(); renderFastbridge(); };
 
@@ -1012,7 +1112,7 @@ qs("#bulkConfirmBtn").onclick = ()=>{
 /* Plans toolbar */
 qs("#planSearch").oninput = (e)=>{ state.search=e.target.value; save(); renderPlans(); };
 qs("#planFilter").onchange = (e)=>{ state.settings.plans.filter = e.target.value; save(); renderPlans(); };
-qs("#planSearchNotes").onclick = ()=>{ state.searchNotesPL = !state.searchNotesPL; save(); renderPlans(); };
+qs("#planSearchNotes").onclick = (e)=>{ state.searchNotesPL = !state.searchNotesPL; save(); e.currentTarget.classList.toggle("active", state.searchNotesPL); renderPlans(); };
 
 /* Modal helpers */
 function openModal(id){ const el=qs("#"+id); el.classList.add("open"); el.setAttribute("aria-hidden","false"); }
@@ -1021,8 +1121,10 @@ qsa(".modal-backdrop").forEach(b=> b.addEventListener("click",(e)=>{ if(e.target
 qs("#bulkModal").addEventListener("click",(e)=>{ if(e.target===qs("#bulkModal")) closeModal("bulkModal"); });
 
 /* ===================== Student Plans Modal ===================== */
+let currentStudentId = null;
 function openStudentModal(stuId){
   const cls = getClass(); const s = cls.students.find(x=>x.id===stuId); if(!s) return;
+  currentStudentId = stuId;
   qs("#stuTitle").textContent = fmtName(s);
   const days = Number(state.settings.plans.upcomingDays)||14;
 
@@ -1040,16 +1142,22 @@ function openStudentModal(stuId){
       wrap.appendChild(hidden);
       dateBtn.onclick = ()=> hidden.showPicker ? hidden.showPicker() : hidden.click();
 
-      if(isOverdue(entry)){ const b=document.createElement("span"); b.className="badge due"; b.innerHTML='Overdue <span class="x" title="Dismiss">×</span>'; b.querySelector(".x").onclick=(ev)=>{ ev.stopPropagation(); entry.dismissed=true; save(); renderList(key,hostId); renderPlans(); }; wrap.appendChild(b); }
-      else if(isUpcoming(entry,days)){ const b=document.createElement("span"); b.className="badge warn"; b.innerHTML='Upcoming <span class="x" title="Dismiss">×</span>'; b.querySelector(".x").onclick=(ev)=>{ ev.stopPropagation(); entry.dismissed=true; save(); renderList(key,hostId); renderPlans(); }; wrap.appendChild(b); }
+      if(entry.completed){
+        const b=document.createElement("span"); b.className="badge complete"; b.textContent='Completed';
+        wrap.appendChild(b);
+      }else if(isOverdue(entry)){
+        const b=document.createElement("span"); b.className="badge due"; b.innerHTML='Overdue <span class="x" title="Dismiss">×</span>'; b.querySelector(".x").onclick=(ev)=>{ ev.stopPropagation(); entry.dismissed=true; save(); renderList(key,hostId); renderPlans(); }; wrap.appendChild(b);
+      }else if(isUpcoming(entry,days)){
+        const b=document.createElement("span"); b.className="badge warn"; b.innerHTML='Upcoming <span class="x" title="Dismiss">×</span>'; b.querySelector(".x").onclick=(ev)=>{ ev.stopPropagation(); entry.dismissed=true; save(); renderList(key,hostId); renderPlans(); }; wrap.appendChild(b);
+      }
 
       const dots = document.createElement("span"); dots.className="options"; dots.textContent="⋯"; dots.title="Options";
       wrap.appendChild(dots);
       const menu = document.createElement("div"); menu.className="menu hidden";
-      const btnComplete = document.createElement("button"); btnComplete.textContent = entry.completed?"Mark Uncompleted":"Mark Completed";
+      const btnComplete = document.createElement("button"); btnComplete.className="btn tiny"; btnComplete.textContent = entry.completed?"Mark Uncompleted":"Mark Completed";
       btnComplete.onclick = (ev)=>{ ev.stopPropagation(); entry.completed=!entry.completed; save(); renderList(key,hostId); renderPlans(); };
-      const btnUndismiss = document.createElement("button"); btnUndismiss.textContent="Undismiss"; btnUndismiss.onclick = (ev)=>{ ev.stopPropagation(); entry.dismissed=false; save(); renderList(key,hostId); renderPlans(); };
-      const btnDelete = document.createElement("button"); btnDelete.textContent="Delete"; btnDelete.onclick = (ev)=>{ ev.stopPropagation(); if(confirm("Delete this entry?")){ s.plans[key] = s.plans[key].filter(x=>x.id!==entry.id); save(); renderList(key,hostId); renderPlans(); } };
+      const btnUndismiss = document.createElement("button"); btnUndismiss.className="btn tiny"; btnUndismiss.textContent="Undismiss"; btnUndismiss.onclick = (ev)=>{ ev.stopPropagation(); entry.dismissed=false; save(); renderList(key,hostId); renderPlans(); };
+      const btnDelete = document.createElement("button"); btnDelete.className="btn bad tiny"; btnDelete.textContent="Delete"; btnDelete.onclick = (ev)=>{ ev.stopPropagation(); if(confirm("Delete this entry?")){ s.plans[key] = s.plans[key].filter(x=>x.id!==entry.id); save(); renderList(key,hostId); renderPlans(); } };
       menu.append(btnComplete, btnUndismiss, btnDelete);
       wrap.appendChild(menu);
       function toggleMenu(ev){ ev?.stopPropagation(); const open = !menu.classList.contains("hidden"); qsa(".menu", host).forEach(m=> m.classList.add("hidden")); if(!open) menu.classList.remove("hidden"); }
@@ -1061,7 +1169,7 @@ function openStudentModal(stuId){
           const li = document.createElement("div"); li.style.display="flex"; li.style.gap="6px"; li.style.alignItems="center";
           const ta = document.createElement("textarea"); ta.className="note-input"; ta.value = t; ta.rows = 2;
           ta.onblur = ()=>{ entry.notes[idx] = ta.value; save(); };
-          const rm = document.createElement("button"); rm.className="btn bad"; rm.textContent="Remove"; rm.style.display="none";
+          const rm = document.createElement("button"); rm.className="btn bad tiny"; rm.textContent="Remove"; rm.style.display="none";
           rm.onclick = ()=>{ entry.notes.splice(idx,1); save(); renderList(key,hostId); renderPlans(); };
           dots.addEventListener("click", ()=>{ rm.style.display = (menu.classList.contains("hidden")?"none":"inline-block"); });
           li.append(ta, rm); wrap.appendChild(li);
@@ -1091,108 +1199,180 @@ function openStudentModal(stuId){
   renderList("evals","evalList");
   renderList("ieps","iepList");
 
+  // Remove student from modal
+  qs("#removeStudentInModal").onclick = ()=>{
+    const s = getClass().students.find(x=>x.id===currentStudentId);
+    if(!s) return;
+    if(confirm(`Remove ${fmtName(s)} from this class?`)){
+      const cls = getClass();
+      cls.students = cls.students.filter(x=>x.id!==s.id);
+      save(); closeModal("studentModal"); renderAll();
+    }
+  };
+
   openModal("studentModal");
 }
 qs("#stuClose").onclick = ()=> closeModal("studentModal");
 qs("#studentModal").addEventListener("click",(e)=>{ if(e.target===qs("#studentModal")) closeModal("studentModal"); });
 
 /* ===================== Effects ===================== */
-function playFxAt(x,y, style){
-  if(style==="none") return; // disabled
-  if(style==="explosion") fxExplosion(x,y);
-  else if(style==="ripple") fxRippleFancy(x,y);
-  else if(style==="confetti") fxConfettiStar(x,y);
-  else if(style==="snap") fxSnapDust(x,y);
+function playFxAt(x,y, style, wild=false){
+  if(style==="none") return;
+  if(style==="explosion") fxExplosion(x,y,wild);
+  else if(style==="ripple") fxRippleFancy(x,y,wild);
+  else if(style==="confetti") fxConfettiStar(x,y,wild);
+  else if(style==="snap") fxSnapDust(x,y,wild);
 }
-const fxLayer = qs("#fxLayer");
-function rnd(a,b){ return Math.random()*(b-a)+a; }
-
-/* Explosion: radial dots */
-function fxExplosion(x,y){
-  for(let i=0;i<16;i++){
-    const d=document.createElement("div"); d.className="fx-dot"; d.style.background="#7db4ff";
-    d.style.left=x+"px"; d.style.top=y+"px"; fxLayer.appendChild(d);
-    const ang=rnd(0,2*Math.PI), dist=rnd(30,70), dx=Math.cos(ang)*dist, dy=Math.sin(ang)*dist;
-    d.animate([{transform:"translate(0,0)",opacity:1},{transform:`translate(${dx}px,${dy}px)`,opacity:0}],{duration:350, easing:"ease-out"}).onfinish=()=>d.remove();
+function playFxFullscreen(style, wild=false){
+  if(style==="none") return;
+  const cx = innerWidth/2, cy = innerHeight/2;
+  if(style==="ripple"){
+    fxRippleFancy(cx,cy,wild);
+    setTimeout(()=>fxRippleFancy(cx,cy,wild),120);
+    setTimeout(()=>fxRippleFancy(cx,cy,wild),240);
+    return;
+  }
+  const bursts = wild ? 16 : 10;
+  for(let i=0;i<bursts;i++){
+    const x = Math.random()*innerWidth*0.8 + innerWidth*0.1;
+    const y = Math.random()*innerHeight*0.7 + innerHeight*0.15;
+    setTimeout(()=> playFxAt(x,y, style, wild), i*60);
   }
 }
 
-/* Ripple (fancy): two rings + sparkles */
-function fxRippleFancy(x,y){
-  const makeRing=(scaleEnd, dur, delay=0)=>{
+const fxLayer = qs("#fxLayer");
+function rnd(a,b){ return Math.random()*(b-a)+a; }
+
+/* Explosion: radial dots (wild = more dots + farther) */
+function fxExplosion(x,y,wild=false){
+  const count = wild ? 40 : 20;
+  const minD = wild ? 40 : 30;
+  const maxD = wild ? 140 : 80;
+  for(let i=0;i<count;i++){
+    const d=document.createElement("div"); d.className="fx-dot"; d.style.background="#7db4ff";
+    d.style.left=x+"px"; d.style.top=y+"px"; fxLayer.appendChild(d);
+    const ang=rnd(0,2*Math.PI), dist=rnd(minD,maxD), dx=Math.cos(ang)*dist, dy=Math.sin(ang)*dist;
+    d.animate([{transform:"translate(0,0)",opacity:1},{transform:`translate(${dx}px,${dy}px)`,opacity:0}],{duration:wild?520:380, easing:"ease-out"}).onfinish=()=>d.remove();
+  }
+}
+
+/* Ripple (fancy): more rings/sparkles when wild */
+function fxRippleFancy(x,y,wild=false){
+  const makeRing=(scaleEnd, dur, delay=0, stroke=2)=>{
     const r=document.createElement("div");
     r.style.position="absolute"; r.style.left=(x-2)+"px"; r.style.top=(y-2)+"px";
-    r.style.width="4px"; r.style.height="4px"; r.style.border="2px solid #7db4ff"; r.style.borderRadius="50%";
+    r.style.width="4px"; r.style.height="4px"; r.style.border=stroke+"px solid #7db4ff"; r.style.borderRadius="50%";
     fxLayer.appendChild(r);
     r.animate(
       [{transform:"scale(1)",opacity:.9},{transform:`scale(${scaleEnd})`,opacity:0}],
       {duration:dur, delay:delay, easing:"cubic-bezier(.2,.8,.2,1)"}
     ).onfinish=()=>r.remove();
   };
-  makeRing(12,520,0);
-  makeRing(8,420,60);
-
-  // Sparkles
-  for(let i=0;i<10;i++){
+  if(wild){
+    makeRing(16,640,0,3);
+    makeRing(11,560,80,3);
+  }else{
+    makeRing(12,520,0,2);
+    makeRing(8,420,60,2);
+  }
+  const sparkCount = wild ? 22 : 14;
+  for(let i=0;i<sparkCount;i++){
     const s=document.createElement("div"); s.className="fx-dot";
-    const size=rnd(1.5,3); s.style.width=size+"px"; s.style.height=size+"px"; s.style.background="#dbe7ff";
+    const size=rnd(1.5, wild?4.2:3.5); s.style.width=size+"px"; s.style.height=size+"px"; s.style.background="#dbe7ff";
     s.style.left=x+"px"; s.style.top=y+"px"; fxLayer.appendChild(s);
-    const ang = rnd(0,2*Math.PI); const dist=rnd(30,90);
-    const dx = Math.cos(ang)*dist; const dy=Math.sin(ang)*dist*0.8;
+    const ang = rnd(0,2*Math.PI); const dist=rnd(30, wild?130:100);
+    const dx = Math.cos(ang)*dist; const dy=Math.sin(ang)*dist*0.85;
     s.animate(
-      [{transform:"translate(0,0)",opacity:.95},{transform:`translate(${dx}px,${dy-10}px)`,opacity:.6},{transform:`translate(${dx}px,${dy}px)`,opacity:0}],
-      {duration:rnd(500,700),easing:"ease-out"}
+      [{transform:"translate(0,0)",opacity:.95},{transform:`translate(${dx}px,${dy-12}px)`,opacity:.6},{transform:`translate(${dx}px,${dy}px)`,opacity:0}],
+      {duration:rnd(wild?700:520,wild?980:780),easing:"ease-out"}
     ).onfinish=()=>s.remove();
   }
 }
 
-/* Confetti: starburst all directions */
-function fxConfettiStar(x,y){
-  const colors = ["#7db4ff","#22c55e","#facc15","#ef4444","#a78bfa","#2dd4bf"];
-  const pieces = 22;
+/* Confetti: small vs wild starburst + streamers + sparkles */
+function fxConfettiStar(x,y,wild=false){
+  const colors = ["#7db4ff","#22c55e","#facc15","#ef4444","#a78bfa","#2dd4bf","#fde68a","#60a5fa"];
+  const pieces = wild ? 60 : 28;
   for(let i=0;i<pieces;i++){
     const c=document.createElement("div"); c.className="fx-confetti";
+    const w = rnd(4, wild?8:6), h = rnd(8, wild?14:10);
+    c.style.width = w+"px"; c.style.height = h+"px";
     c.style.left=x+"px"; c.style.top=y+"px";
     c.style.background = colors[i%colors.length];
-    c.style.borderRadius = "2px";
+    c.style.borderRadius = Math.random()<0.4 ? "2px" : "50%";
     fxLayer.appendChild(c);
-    const ang = (i/pieces)*2*Math.PI + rnd(-0.12,0.12);
-    const dist = rnd(60,130);
+    const ang = rnd(0,2*Math.PI);
+    const dist = rnd(wild?70:50, wild?160:110);
     const dx = Math.cos(ang)*dist;
     const dy = Math.sin(ang)*dist;
-    const rot = rnd(-270,270);
+    const rot = rnd(-540,540);
     c.animate(
       [
         { transform:"translate(0,0) rotate(0deg)", opacity:1 },
+        { transform:`translate(${dx*0.6}px,${dy*0.6}px) rotate(${rot/2}deg)`, opacity:.9 },
         { transform:`translate(${dx}px,${dy}px) rotate(${rot}deg)`, opacity:0 }
       ],
-      { duration:rnd(550,800), easing:"cubic-bezier(.15,.8,.25,1)" }
+      { duration:rnd(wild?650:520,wild?1100:820), easing:"cubic-bezier(.12,.9,.22,1)" }
     ).onfinish=()=>c.remove();
+  }
+  if(wild){
+    for(let i=0;i<12;i++){
+      const s=document.createElement("div");
+      s.style.position="absolute"; s.style.left=x+"px"; s.style.top=y+"px";
+      s.style.width="2px"; s.style.height=rnd(40,70)+"px";
+      s.style.background=colors[i%colors.length];
+      s.style.borderRadius="2px";
+      fxLayer.appendChild(s);
+      const ang = rnd(0,2*Math.PI);
+      const dist = rnd(120,220);
+      const dx = Math.cos(ang)*dist;
+      const dy = Math.sin(ang)*dist;
+      const wobX = rnd(-30,30), wobY = rnd(-20,20);
+      s.animate(
+        [
+          { transform:"translate(0,0) rotate(0deg)", opacity:1 },
+          { transform:`translate(${dx*0.5 + wobX}px,${dy*0.5 + wobY}px) rotate(${rnd(-120,120)}deg)`, opacity:.85 },
+          { transform:`translate(${dx}px,${dy}px) rotate(${rnd(-240,240)}deg)`, opacity:0 }
+        ],
+        { duration:rnd(900,1400), easing:"cubic-bezier(.15,.7,.2,1)" }
+      ).onfinish=()=>s.remove();
+    }
+    for(let i=0;i<30;i++){
+      const d=document.createElement("div"); d.className="fx-dot";
+      const size=rnd(1,2.5); d.style.width=size+"px"; d.style.height=size+"px"; d.style.background="#fff";
+      d.style.left=x+"px"; d.style.top=y+"px"; fxLayer.appendChild(d);
+      const ang = rnd(0,2*Math.PI); const dist=rnd(50,200);
+      const dx = Math.cos(ang)*dist; const dy=Math.sin(ang)*dist;
+      d.animate(
+        [{transform:"translate(0,0)",opacity:.9},{transform:`translate(${dx}px,${dy}px)`,opacity:0}],
+        {duration:rnd(700,1200),easing:"ease-out"}
+      ).onfinish=()=>d.remove();
+    }
   }
 }
 
-/* Thanos Snap — drifting dust */
-function fxSnapDust(x,y){
-  const particles = 60;
+/* Thanos Snap — drifting dust (wild = more particles & wind) */
+function fxSnapDust(x,y,wild=false){
+  const particles = wild ? 100 : 60;
   for(let i=0;i<particles;i++){
     const d=document.createElement("div"); d.className="fx-dot";
-    const size = rnd(1.2,3.2);
+    const size = rnd(1.2, wild?3.8:3.2);
     d.style.width=size+"px"; d.style.height=size+"px";
     d.style.background = ["#cfd8ff","#e5ecff","#bfd0ff","#d8e1ff"][i%4];
     d.style.left=x+"px"; d.style.top=y+"px";
     fxLayer.appendChild(d);
     const spread = rnd(-8,8);
-    const wind = rnd(60,130);
-    const rise = rnd(-70,20);
-    const wobbleX = rnd(-12,12);
-    const wobbleY = rnd(-10,10);
+    const wind = rnd(wild?80:60, wild?180:130);
+    const rise = rnd(-80, wild?40:20);
+    const wobbleX = rnd(-12, wild?16:12);
+    const wobbleY = rnd(-10, wild?14:10);
 
     const keyframes = [
       { transform:`translate(${spread}px, ${spread}px) scale(1)`, opacity:0.95, offset:0 },
       { transform:`translate(${wind*0.4 + wobbleX}px, ${rise*0.3 + wobbleY}px) scale(.9)`, opacity:0.6, offset:0.5 },
       { transform:`translate(${wind}px, ${rise}px) scale(.85)`, opacity:0 }
     ];
-    d.animate(keyframes,{duration:rnd(800,1200), easing:"ease-out"}).onfinish=()=>d.remove();
+    d.animate(keyframes,{duration:rnd(wild?1200:800, wild?1700:1200), easing:"ease-out"}).onfinish=()=>d.remove();
   }
 }
 
@@ -1213,7 +1393,7 @@ document.addEventListener("keydown",(ev)=>{
 /* ===================== Initial Render ===================== */
 function countFastbridge(students, tri){
   const A={done:0,total:students.length}, U={done:0,total:students.length};
-  students.forEach(st=>{ if(st.fast.a[tri]?.done) A.done++; if(st.fast.auto[tri]?.done) U.done++; });
+  students.forEach(st=>{ st=ensureStudent(st); if(st.fast.a[tri]?.done) A.done++; if(st.fast.auto[tri]?.done) U.done++; });
   return [A,U];
 }
 function renderAll(){ renderClassTabs(); renderAppNav(); applyScreen(); }
