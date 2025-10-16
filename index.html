@@ -1399,5 +1399,238 @@ function countFastbridge(students, tri){
 function renderAll(){ renderClassTabs(); renderAppNav(); applyScreen(); }
 renderAll();
 </script>
+
+<script>
+/* ================================================
+ * DataTools — Export/Import LS + SS + IndexedDB
+ * - Teacher-friendly build (no Inspector UI)
+ * - Auto-injects buttons in Settings footer
+ * ================================================ */
+(function () {
+  // ---------- Helpers ----------
+  const downloadJSON = (obj, baseName) => {
+    const blob = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const stamp = new Date().toISOString().slice(0,19).replace(/[:T]/g,'-');
+    a.href = url;
+    a.download = `${baseName}-${stamp}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
+
+  const dumpLocalStorage = (prefix = "") => {
+    const out = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (!prefix || (k && k.startsWith(prefix))) out[k] = localStorage.getItem(k);
+    }
+    return out;
+  };
+
+  const dumpSessionStorage = (prefix = "") => {
+    const out = {};
+    for (let i = 0; i < sessionStorage.length; i++) {
+      const k = sessionStorage.key(i);
+      if (!prefix || (k && k.startsWith(prefix))) out[k] = sessionStorage.getItem(k);
+    }
+    return out;
+  };
+
+  // Enumerate and dump all IndexedDB DBs (Chromium/modern browsers).
+  const dumpIndexedDB = async () => {
+    const idbDump = { databases: [] };
+    if (!('indexedDB' in window) || typeof indexedDB.databases !== 'function') {
+      idbDump.note = 'indexedDB.databases() not supported; skipping IDB.';
+      return idbDump;
+    }
+    const dbList = await indexedDB.databases(); // [{name, version}, ...]
+    for (const info of dbList) {
+      if (!info || !info.name) continue;
+      const name = info.name;
+      const version = info.version;
+      const db = await openDB(name, version);
+      const stores = Array.from(db.objectStoreNames || []);
+      const dbDump = { name, version, stores: [] };
+      for (const storeName of stores) {
+        try {
+          const all = await readAllFromStore(db, storeName);
+          dbDump.stores.push({ storeName, records: all });
+        } catch (e) {
+          dbDump.stores.push({ storeName, error: String(e) });
+        }
+      }
+      db.close();
+      idbDump.databases.push(dbDump);
+    }
+    return idbDump;
+
+    function openDB(name, version) {
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open(name, version);
+        req.onupgradeneeded = () => {};
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error || new Error('IDB open failed'));
+      });
+    }
+    function readAllFromStore(db, storeName) {
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(storeName, 'readonly');
+        const store = tx.objectStore(storeName);
+        const req = store.getAll();
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = () => reject(req.error || new Error('IDB getAll failed'));
+      });
+    }
+  };
+
+  const restoreLocalStorage = (obj) => {
+    if (!obj) return 0;
+    const keys = Object.keys(obj);
+    keys.forEach(k => localStorage.setItem(k, obj[k]));
+    return keys.length;
+  };
+
+  const restoreSessionStorage = (obj) => {
+    if (!obj) return 0;
+    const keys = Object.keys(obj);
+    keys.forEach(k => sessionStorage.setItem(k, obj[k]));
+    return keys.length;
+  };
+
+  // Restore IndexedDB only if DB/store already exist (don’t mutate schema).
+  const restoreIndexedDB = async (idbDump) => {
+    if (!idbDump || !Array.isArray(idbDump.databases)) return { restored: 0, skipped: true };
+    let restored = 0;
+    for (const dbInfo of idbDump.databases) {
+      if (!dbInfo || !dbInfo.name) continue;
+      const name = dbInfo.name;
+      const db = await openDB(name, dbInfo.version);
+      const existingStores = new Set(Array.from(db.objectStoreNames || []));
+      for (const store of (dbInfo.stores || [])) {
+        if (!store || !store.storeName) continue;
+        if (!existingStores.has(store.storeName) || !Array.isArray(store.records)) continue;
+        await writeAllToStore(db, store.storeName, store.records);
+        restored += store.records.length;
+      }
+      db.close();
+    }
+    return { restored, skipped: false };
+
+    function openDB(name, version) {
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open(name, version);
+        req.onupgradeneeded = () => {};
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error || new Error('IDB open failed'));
+      });
+    }
+    function writeAllToStore(db, storeName, records) {
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(storeName, 'readwrite');
+        const store = tx.objectStore(storeName);
+        (records || []).forEach(rec => store.put(rec));
+        tx.oncomplete = () => resolve(true);
+        tx.onerror = () => reject(tx.error || new Error('IDB write failed'));
+      });
+    }
+  };
+
+  // ---------- Public API ----------
+  const DataTools = {
+    async exportAll(prefix = "") {
+      try {
+        const payload = {
+          _meta: { origin: location.origin, exportedAt: new Date().toISOString() },
+          localStorage: dumpLocalStorage(prefix),
+          sessionStorage: dumpSessionStorage(prefix),
+          indexedDB: await dumpIndexedDB()
+        };
+        downloadJSON(payload, 'class-app-data');
+        alert('Export complete. A JSON file has been downloaded.');
+      } catch (err) {
+        console.error('Export failed:', err);
+        alert('Export failed. See console for details.');
+      }
+    },
+
+    importAll() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'application/json';
+      input.onchange = async () => {
+        const file = input.files && input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = async () => {
+          try {
+            const data = JSON.parse(String(reader.result || '{}'));
+            let lsCount = 0, ssCount = 0, idbInfo = { restored: 0, skipped: true };
+
+            if (data.localStorage || data.sessionStorage || data.indexedDB) {
+              lsCount = restoreLocalStorage(data.localStorage || {});
+              ssCount = restoreSessionStorage(data.sessionStorage || {});
+              idbInfo = await restoreIndexedDB(data.indexedDB || {});
+            } else {
+              // v1 flat export (LS only)
+              lsCount = restoreLocalStorage(data);
+            }
+
+            alert(
+              `Import complete.\n` +
+              `localStorage: ${lsCount} item(s)\n` +
+              `sessionStorage: ${ssCount} item(s)\n` +
+              `IndexedDB: ${idbInfo.restored} record(s)` +
+              (idbInfo.skipped ? ' (IDB skipped or unsupported)' : '')
+            );
+
+            // Optional: refresh your UI
+            // if (window.app && typeof window.app.reload === 'function') window.app.reload();
+            // else location.reload();
+
+          } catch (err) {
+            console.error('Import failed:', err);
+            alert('Import failed. Make sure you selected a valid export JSON.');
+          }
+        };
+        reader.readAsText(file);
+      };
+      input.click();
+    }
+  };
+
+  // Wire up buttons after DOM is ready
+  window.addEventListener('DOMContentLoaded', function(){
+    // Put Export/Import buttons into Settings modal footer (next to Close)
+    const closeBtn = document.getElementById('closeSettings');
+    if (closeBtn && closeBtn.parentElement) {
+      const footer = closeBtn.parentElement;
+
+      const exportBtn = document.createElement('button');
+      exportBtn.id = 'btnExportLocalData';
+      exportBtn.className = 'btn';
+      exportBtn.textContent = 'Export (Download JSON)';
+      exportBtn.title = 'Download a backup of your data to a .json file';
+      exportBtn.style.marginRight = '8px';
+
+      const importBtn = document.createElement('button');
+      importBtn.id = 'btnImportLocalData';
+      importBtn.className = 'btn';
+      importBtn.textContent = 'Import (Choose File)';
+      importBtn.title = 'Restore from a previously downloaded .json file';
+      importBtn.style.marginRight = 'auto'; // keep them left of Close
+
+      footer.insertBefore(exportBtn, closeBtn);
+      footer.insertBefore(importBtn, closeBtn);
+
+      exportBtn.addEventListener('click', () => DataTools.exportAll());
+      importBtn.addEventListener('click', () => DataTools.importAll());
+    }
+  });
+})();
+</script>
+
 </body>
 </html>
